@@ -1,7 +1,9 @@
-public class Board {
+import java.io.Serializable;
 
-    private Player player1;
-    private Player player2;
+public class Board implements Serializable {
+
+    private transient Player player1;
+    private transient Player player2;
     private Piece[][] piecePositions;
 
     public Board(Player player1, Player player2) {
@@ -19,25 +21,33 @@ public class Board {
         //init 1st and 3rd row of 1st player
         for(int i = 0; i < 3; i += 2) {
             for(int j = 1; j < 8; j += 2) {
-                movePiece(player1.getPiece(pieceCounterPlayer1++),i,j);
+                Piece piece = player1.getPiece(pieceCounterPlayer1++);
+                piece.becomeUncrowned();
+                movePiece(piece,i,j);
             }
         }
 
         //init 2nd row of 1st player
         for(int j = 0; j < 7; j += 2) {
-            movePiece(player1.getPiece(pieceCounterPlayer1++),1,j);
+            Piece piece = player1.getPiece(pieceCounterPlayer1++);
+            piece.becomeUncrowned();
+            movePiece(piece,1,j);
         }
 
         //init 1st and 3rd row of 2nd player
         for(int i = 5; i < 8; i += 2) {
             for(int j = 0; j < 7; j += 2) {
-                movePiece(player2.getPiece(pieceCounterPlayer2++),i,j);
+                Piece piece = player2.getPiece(pieceCounterPlayer2++);
+                piece.becomeUncrowned();
+                movePiece(piece,i,j);
             }
         }
 
         //init 2nd row of 2nd player
         for(int j = 1; j < 8; j += 2) {
-            movePiece(player2.getPiece(pieceCounterPlayer2++),6,j);
+            Piece piece = player2.getPiece(pieceCounterPlayer2++);
+            piece.becomeUncrowned();
+            movePiece(piece,6,j);
         }
     }
 
@@ -47,7 +57,7 @@ public class Board {
         } else if(currentPiece.isOwnedBy(player1)) {
             return pieceCanJumpDown(currentPiece);
         } else {
-            //held by player 2
+            //owned by player 2
             return pieceCanJumpUp(currentPiece);
         }
     }
@@ -56,88 +66,86 @@ public class Board {
         return piecePositions[row][column];
     }
 
+    public boolean pieceHasPossibleSimpleMove(Piece piece) {
+        int row = piece.getRow();
+        int column = piece.getColumn();
+
+        boolean upLeftOnBoard = row - 1 >= 0 && row - 1 <= 7 && column - 1 >= 0 && column - 1 <=7;
+        boolean upRightOnBoard = row - 1 >= 0 && row - 1 <= 7 && column + 1 >= 0 && column + 1 <=7;
+        boolean downLeftOnBoard = row + 1 >= 0 && row + 1 <= 7 && column - 1 >= 0 && column - 1 <=7;
+        boolean downRightOnBoard = row + 1 >= 0 && row + 1 <= 7 && column + 1 >= 0 && column + 1 <=7;
+
+        boolean upLeftEmpty = false;
+        if(upLeftOnBoard) {
+            upLeftEmpty = piecePositions[row - 1][column - 1] == null;
+        }
+        boolean upRightEmpty = false;
+        if(upRightOnBoard) {
+            upRightEmpty = piecePositions[row - 1][column + 1] == null;
+        }
+        boolean downLeftEmpty = false;
+        if(downLeftOnBoard) {
+            downLeftEmpty = piecePositions[row + 1][column - 1] == null;
+        }
+        boolean downRightEmpty = false;
+        if(downRightOnBoard) {
+            downRightEmpty = piecePositions[row + 1][column + 1] == null;
+        }
+
+        if(piece.isKing()) {
+            return upLeftEmpty || upRightEmpty || downLeftEmpty || downRightEmpty;
+        } else if(piece.isOwnedBy(player1)) {
+            return downLeftEmpty || downRightEmpty;
+        } else {
+            //owned by player 2
+            return upLeftEmpty || upRightEmpty;
+        }
+    }
+
     public boolean isLegalMove(Piece activePiece, int newRow, int newColumn) {
 
+        //check if the selected position is empty
         if(piecePositions[newRow][newColumn] != null) {
             return false;
         }
 
         //selected position is at least empty
 
-        int currentRow = activePiece.getRow();
-        int currentColumn = activePiece.getColumn();
+        boolean pieceAttemptsToJumpUpLeft = activePiece.attemptsToJumpUpLeft(newRow,newColumn);
+        boolean pieceAttemptsToJumpUpRight = activePiece.attemptsToJumpUpRight(newRow,newColumn);
+        boolean pieceAttemptsToJumpDownLeft = activePiece.attemptsToJumpDownLeft(newRow,newColumn);
+        boolean pieceAttemptsToJumpDownRight = activePiece.attemptsToJumpDownRight(newRow,newColumn);
+
+        boolean pieceAttemptsSimpleMoveUpLeft = activePiece.attemptsSimpleMoveUpLeft(newRow,newColumn);
+        boolean pieceAttemptsSimpleMoveUpRight = activePiece.attemptsSimpleMoveUpRight(newRow,newColumn);
+        boolean pieceAttemptsSimpleMoveDownLeft = activePiece.attemptsSimpleMoveDownLeft(newRow,newColumn);
+        boolean pieceAttemptsSimpleMoveDownRight = activePiece.attemptsSimpleMoveDownRight(newRow,newColumn);
 
         if(activePiece.isKing()) {
-            if(pieceCanJumpUpLeft(activePiece)) {
-                return pieceAttemptsToJumpUpLeft(activePiece, newRow, newColumn);
+
+            if(pieceCanJump(activePiece)) {
+                return pieceAttemptsToJumpDownLeft || pieceAttemptsToJumpDownRight || pieceAttemptsToJumpUpLeft || pieceAttemptsToJumpUpRight;
             }
 
-            if(pieceCanJumpUpRight(activePiece)){
-                return pieceAttemptsToJumpUpRight(activePiece, newRow, newColumn);
-            }
+            return pieceAttemptsSimpleMoveDownLeft || pieceAttemptsSimpleMoveDownRight || pieceAttemptsSimpleMoveUpLeft || pieceAttemptsSimpleMoveUpRight;
 
-            if(pieceCanJumpDownLeft(activePiece)){
-                return pieceAttemptsToJumpDownLeft(activePiece, newRow, newColumn);
-            }
-
-            if(pieceCanJumpDownRight(activePiece)){
-                return pieceAttemptsToJumpDownRight(activePiece, newRow, newColumn);
-            }
-
-            //diagonal up moves
-            if(newRow == currentRow - 1 && newColumn == currentColumn + 1) {
-                return true;
-            }
-            if(newRow == currentRow - 1 && newColumn == currentColumn - 1) {
-                return true;
-            }
-
-            //diagonal down moves
-            if(newRow == currentRow + 1 && newColumn == currentColumn + 1) {
-                return true;
-            }
-            if(newRow == currentRow + 1 && newColumn == currentColumn - 1) {
-                return true;
-            }
-
-            return false;
         } else if (activePiece.isOwnedBy(player1)){
-            if(pieceCanJumpDownLeft(activePiece)){
-                return pieceAttemptsToJumpDownLeft(activePiece, newRow, newColumn);
+
+            if(pieceCanJump(activePiece)) {
+                return pieceAttemptsToJumpDownLeft || pieceAttemptsToJumpDownRight;
             }
 
-            if(pieceCanJumpDownRight(activePiece)){
-                return pieceAttemptsToJumpDownRight(activePiece, newRow, newColumn);
-            }
+            return pieceAttemptsSimpleMoveDownLeft || pieceAttemptsSimpleMoveDownRight;
 
-            //diagonal down moves
-            if(newRow == currentRow + 1 && newColumn == currentColumn + 1) {
-                return true;
-            }
-            if(newRow == currentRow + 1 && newColumn == currentColumn - 1) {
-                return true;
-            }
-
-            return false;
         } else {
-            //held by player 2
-            if(pieceCanJumpUpLeft(activePiece)) {
-                return pieceAttemptsToJumpUpLeft(activePiece, newRow, newColumn);
+            //owned by player 2
+
+            if(pieceCanJump(activePiece)) {
+                return pieceAttemptsToJumpUpLeft || pieceAttemptsToJumpUpRight;
             }
 
-            if(pieceCanJumpUpRight(activePiece)){
-                return pieceAttemptsToJumpUpRight(activePiece, newRow, newColumn);
-            }
+            return pieceAttemptsSimpleMoveUpLeft || pieceAttemptsSimpleMoveUpRight;
 
-            //diagonal up moves
-            if(newRow == currentRow - 1 && newColumn == currentColumn + 1) {
-                return true;
-            }
-            if(newRow == currentRow - 1 && newColumn == currentColumn - 1) {
-                return true;
-            }
-
-            return false;
         }
 
 
@@ -145,18 +153,42 @@ public class Board {
 
     //returns if the piece became a king on this move
     public boolean movePiece(Piece piece, int newRow, int newColumn) {
-        int oldRow = piece.getRow();
-        int oldColumn = piece.getColumn();
-        piecePositions[oldRow][oldColumn] = null;
+        if(piece.isInGame()) {
+            int oldRow = piece.getRow();
+            int oldColumn = piece.getColumn();
+
+            piecePositions[oldRow][oldColumn] = null;
+
+            //remove jumped over piece if a jump is happening
+            if(piece.attemptsToJumpUpLeft(newRow,newColumn)) {
+                piecePositions[oldRow - 1][oldColumn - 1].removeFromGame();
+                piecePositions[oldRow - 1][oldColumn - 1] = null;
+            }
+            if(piece.attemptsToJumpUpRight(newRow,newColumn)) {
+                piecePositions[oldRow - 1][oldColumn + 1].removeFromGame();
+                piecePositions[oldRow - 1][oldColumn + 1] = null;
+            }
+            if(piece.attemptsToJumpDownLeft(newRow,newColumn)) {
+                piecePositions[oldRow + 1][oldColumn - 1].removeFromGame();
+                piecePositions[oldRow + 1][oldColumn - 1] = null;
+            }
+            if(piece.attemptsToJumpDownRight(newRow,newColumn)) {
+                piecePositions[oldRow + 1][oldColumn + 1].removeFromGame();
+                piecePositions[oldRow + 1][oldColumn + 1] = null;
+            }
+        } else {
+            //used when calling reset()
+            piece.insertInGame();
+        }
 
         piecePositions[newRow][newColumn] = piece;
         piece.setRow(newRow);
         piece.setColumn(newColumn);
 
+        //check if the piece needs to become a king
         if(piece.isOwnedBy(player1) && newRow == 7) {
             return piece.becomeKing();
         }
-
         if(piece.isOwnedBy(player2) && newRow == 0) {
             return piece.becomeKing();
         }
@@ -247,34 +279,6 @@ public class Board {
             return otherPiece != null && otherPiece.hasDifferentPieceOwner(currentPiece) && availableSpace == null;
         }
         return false;
-    }
-
-    private boolean pieceAttemptsToJumpDownRight(Piece currentPiece, int newRow, int newColumn) {
-        int currentRow = currentPiece.getRow();
-        int currentColumn = currentPiece.getColumn();
-
-        return newRow == currentRow + 2 && newColumn == currentColumn + 2;
-    }
-
-    private boolean pieceAttemptsToJumpDownLeft(Piece currentPiece, int newRow, int newColumn) {
-        int currentRow = currentPiece.getRow();
-        int currentColumn = currentPiece.getColumn();
-
-        return newRow == currentRow + 2 && newColumn == currentColumn - 2;
-    }
-
-    private boolean pieceAttemptsToJumpUpRight(Piece currentPiece, int newRow, int newColumn) {
-        int currentRow = currentPiece.getRow();
-        int currentColumn = currentPiece.getColumn();
-
-        return newRow == currentRow - 2 && newColumn == currentColumn + 2;
-    }
-
-    private boolean pieceAttemptsToJumpUpLeft(Piece currentPiece, int newRow, int newColumn) {
-        int currentRow = currentPiece.getRow();
-        int currentColumn = currentPiece.getColumn();
-
-        return newRow == currentRow - 2 && newColumn == currentColumn - 2;
     }
 
 }

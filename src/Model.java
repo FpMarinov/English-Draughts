@@ -1,3 +1,5 @@
+import java.awt.*;
+
 public class Model {
 
     private Player player1;
@@ -7,9 +9,48 @@ public class Model {
     private Piece activePiece;
 
     public Model() {
-        player1 = new Player();
-        player2 = new Player();
+        player1 = new Player(Color.RED);
+        player2 = new Player(Color.WHITE);
         board = new Board(player1,player2);
+    }
+
+    public Player checkForWinner() throws DrawException {
+        if(player1.getPiecesInGame().isEmpty()) {
+            return player2;
+        } else if(player2.getPiecesInGame().isEmpty()) {
+            return player1;
+        } else {
+
+            boolean player1HasLegalMovesLeft = playerHasLegalMovesLeft(player1);
+            boolean player2HasLegalMovesLeft = playerHasLegalMovesLeft(player2);
+
+            if(!player1HasLegalMovesLeft && !player2HasLegalMovesLeft) {
+                throw new DrawException();
+            } else if(!player1HasLegalMovesLeft) {
+                return player2;
+            } else if(!player2HasLegalMovesLeft) {
+                return player1;
+            } else {
+                return null;
+            }
+        }
+    }
+
+    public boolean playerHasLegalMovesLeft(Player player) {
+        if(playerCanJump(player)) {
+            return true;
+        } else {
+            for(Piece piece: player.getPiecesInGame()) {
+                if(board.pieceHasPossibleSimpleMove(piece)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
+    public void newGame() {
+        board.reset();
     }
 
     public void proposeActivePiece(int row, int column) throws NotJumpablePieceException, NotOwnedPieceException {
@@ -19,7 +60,7 @@ public class Model {
             throw new NotOwnedPieceException();
         }
 
-        if(activePlayerCanJump()) {
+        if(playerCanJump(activePlayer)) {
             if(!board.pieceCanJump(proposedPiece)) {
                 throw new NotJumpablePieceException();
             }
@@ -46,8 +87,8 @@ public class Model {
         }
     }
 
-    private boolean activePlayerCanJump() {
-        for(Piece piece: activePlayer.getPieces()) {
+    private boolean playerCanJump(Player player) {
+        for(Piece piece: player.getPiecesInGame()) {
             if(board.pieceCanJump(piece)) {
                 return true;
             }

@@ -1,13 +1,14 @@
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Player {
     private List<Piece> pieces;
 
-    public Player() {
+    public Player(Color pieceColor) {
         pieces = new ArrayList<>(12);
         for(int i = 1; i <= 12; i++) {
-            pieces.add(new Piece(this));
+            pieces.add(new Piece(this, pieceColor));
         }
     }
 
@@ -15,9 +16,19 @@ public class Player {
         return pieces.get(index);
     }
 
-    public List<Piece> getPieces() {
-        return pieces;
+    public List<Piece> getPiecesInGame() {
+
+        List<Piece> piecesInGame = new ArrayList<>(12);
+
+        for(Piece piece: pieces) {
+            if(piece.isInGame()) {
+                piecesInGame.add(piece);
+            }
+        }
+
+        return piecesInGame;
     }
+
 
 
 }
