@@ -15,6 +15,11 @@ public class Model {
         activePlayer = player1;
     }
 
+    public void newGame() {
+        board.reset();
+        activePlayer = player1;
+    }
+
     public Board getBoard() {
         return board;
     }
@@ -44,11 +49,6 @@ public class Model {
                 return -1;
             }
         }
-    }
-
-    public void newGame() {
-        board.reset();
-        activePlayer = player1;
     }
 
     /**

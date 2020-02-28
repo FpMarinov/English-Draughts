@@ -113,8 +113,13 @@ public class Server extends Thread{
                         if(gameOver) {
                             //game over
                             response.setGameOver(true);
-                            response.setDraw(draw);
-                            response.setWinningPlayerID(winningPlayerID);
+                            if(!draw) {
+                                if (winningPlayerID == playerID) {
+                                    response.setPlayerWon(true);
+                                }
+                            } else {
+                                response.setDraw(true);
+                            }
                         } else {
                             //game not over, turn start normally
                             response.setNeedToProposePiece(true);
@@ -125,13 +130,31 @@ public class Server extends Thread{
                             }
                         }
                     } else if(needToProposeMove) {
-                            response.setNeedToProposeMove(true);
-                            needToProposeMove = false;
-                            if(errorMessage != null) {
-                                response.setErrorMessage(errorMessage);
-                                errorMessage = null;
-                            }
+                        response.setNeedToProposeMove(true);
+                        needToProposeMove = false;
+                        if(errorMessage != null) {
+                            response.setErrorMessage(errorMessage);
+                            errorMessage = null;
                         }
+                    } else {
+                        //turn needs to end
+                        response.setEndTurn(true);
+                        needToProposePiece = true;
+                        ACTIVE_PLAYER_CONDITION.signal();
+
+                        //change active player
+                        int otherPlayerID = 0;
+                        switch (playerID) {
+                            case 1:
+                                otherPlayerID = 2;
+                                break;
+
+                            case 2:
+                                otherPlayerID = 1;
+                                break;
+                        }
+                        MODEL.setActivePlayer(otherPlayerID);
+                    }
 
 
                     //send response
@@ -145,12 +168,6 @@ public class Server extends Thread{
                     hasRequest = false;
                     RESPONSE_CONDITION.signal();
                     READ_WRITE_LOCK.unlock();
-
-
-                    /**
-                     * if turn over signal active player condition
-                     * set needToProposePiece to true
-                     */
 
                     PLAYER_LOCK.unlock();
                 }

@@ -7,7 +7,7 @@ public class ResponsePacket implements Serializable {
     private Board board;
     private boolean gameOver;
     private boolean draw;
-    private int winningPlayerID;
+    private boolean playerWon;
     private boolean proposedDraw;
     private boolean deniedDraw;
     private boolean endTurn;
@@ -23,7 +23,7 @@ public class ResponsePacket implements Serializable {
         firstTurn = false;
         gameOver = false;
         draw = false;
-        winningPlayerID = -1;
+        playerWon = false;
         proposedDraw = false;
         deniedDraw = false;
         proposedNewGame = false;
@@ -31,6 +31,14 @@ public class ResponsePacket implements Serializable {
         endTurn = false;
         needToProposePiece = false;
         needToProposeMove = false;
+    }
+
+    public boolean isPlayerWon() {
+        return playerWon;
+    }
+
+    public void setPlayerWon(boolean playerWon) {
+        this.playerWon = playerWon;
     }
 
     public boolean isFirstTurn() {
@@ -95,14 +103,6 @@ public class ResponsePacket implements Serializable {
 
     public void setDeniedDraw(boolean deniedDraw) {
         this.deniedDraw = deniedDraw;
-    }
-
-    public int getWinningPlayerID() {
-        return winningPlayerID;
-    }
-
-    public void setWinningPlayerID(int winningPlayerID) {
-        this.winningPlayerID = winningPlayerID;
     }
 
     public Board getBoard() {
