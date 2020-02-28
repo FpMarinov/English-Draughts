@@ -223,6 +223,10 @@ public class Server extends Thread{
             requestReader.start();
 
             try{
+                /**
+                 * possibly remove writer join so that
+                 * the client can close
+                 */
                 responseWriter.join();
                 requestReader.join();
             }catch (InterruptedException e) {

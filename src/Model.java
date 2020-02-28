@@ -77,7 +77,6 @@ public class Model {
 
     //returns true if the active piece can still jump after the move
     //and it didn't become a king, false otherwise
-
     /**
      *
      * @param newRow proposed new row for the active piece
@@ -87,7 +86,6 @@ public class Model {
      * @throws IllegalMoveException if the proposed move isn't legal
      */
     public boolean proposeActivePieceMove(int newRow, int newColumn) throws IllegalMoveException {
-        //////////////
         if(board.isLegalMove(activePiece,newRow,newColumn)) {
             boolean becameKing = board.movePiece(activePiece,newRow,newColumn);
 
@@ -111,10 +109,6 @@ public class Model {
                 activePlayer = player2;
                 break;
         }
-    }
-
-    public Player getActivePlayer() {
-        return activePlayer;
     }
 
     public int getActivePlayerID() {
