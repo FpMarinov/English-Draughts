@@ -8,12 +8,13 @@ public class ResponsePacket implements Serializable {
     private boolean isGameOver;
     private boolean isDraw;
     private boolean hasPlayerWon;
+    private boolean isNewGameAboutToBegin;
     private boolean hasOpponentProposedDraw;
     private boolean hasOpponentDeniedDraw;
     private boolean hasToEndTurn;
     private boolean hasToProposePiece;
     private boolean hasToProposeMove;
-    private boolean isNewGameAboutToBegin;
+
 
     public ResponsePacket(Board board) {
         //default values

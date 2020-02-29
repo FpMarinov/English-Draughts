@@ -64,11 +64,13 @@ public class Server extends Thread {
                         //deal with a draw proposal
                         if (request.hasProposedDraw()) {
                             drawProposals++;
+                            hasPlayerProposedDraw = true;
                         }
                         //deal with a draw denial
                         if (request.hasDeniedDraw()) {
                             drawProposals = 0;
                             isDeniedDraw = true;
+                            hasPlayerDeniedDraw = true;
                         }
 
                         hasRequest = true;
@@ -78,6 +80,7 @@ public class Server extends Thread {
                     inputStream.close();
                 } catch (ClassNotFoundException | IOException e) {
                     e.printStackTrace();
+                    System.exit(0);
                 }
             }
         }
@@ -143,6 +146,16 @@ public class Server extends Thread {
                         //game has finished and both
                         //players know about it
 
+                        //wait 3 seconds
+                        //for player to read
+                        //game over
+                        try {
+                            Thread.sleep(3000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+
+
                         //restart game
                         resetClientThreadFields();
                         resetServerFields();
@@ -155,7 +168,7 @@ public class Server extends Thread {
                         //if both resets have happened
                         //make sure the next turn skips
                         //the current code block
-                        if(fieldResets == 2) {
+                        if (fieldResets == 2) {
                             fieldResets = 0;
                             gameOverSignals = 0;
                         }
@@ -180,20 +193,36 @@ public class Server extends Thread {
                     } else if (hasToProposePiece) {
                         //turn start
 
-                        //deal with a draw proposal
-                        if (drawProposals == 1) {
+                        //reset hasPlayerDeniedDraw boolean
+                        //if still true from previous denial
+                        if (!isDeniedDraw && hasPlayerDeniedDraw) {
+                            hasPlayerDeniedDraw = false;
+                        }
+
+                        if (drawProposals == 1 && !hasPlayerProposedDraw) {
+                            //deal with a draw proposal
                             response.setHasOpponentProposedDraw(true);
-                        }
-                        //deal with draw denial
-                        if (isDeniedDraw) {
+                        } else if (isDeniedDraw && !hasPlayerDeniedDraw) {
+                            //deal with draw denial
                             response.setHasOpponentDeniedDraw(true);
+                            //reset booleans
                             isDeniedDraw = false;
+                            hasPlayerProposedDraw = false;
                         }
+
 
                         //check for first turn
                         if (isFirstTurn) {
                             response.setFirstTurn(true);
                             isFirstTurn = false;
+
+                            //sleep for 3 seconds on first turn
+                            //for player to read new game
+                            try {
+                                Thread.sleep(3000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
                         }
 
                         //check for game over at turn start
@@ -291,6 +320,8 @@ public class Server extends Thread {
         private boolean hasToProposePiece;
         private boolean hasToProposeMove;
         private String errorMessage;
+        private boolean hasPlayerProposedDraw;
+        private boolean hasPlayerDeniedDraw;
 
         public ClientThread(Socket client, int playerID) {
             this.client = client;
@@ -314,6 +345,8 @@ public class Server extends Thread {
             hasToProposePiece = true;
             hasToProposeMove = false;
             errorMessage = null;
+            hasPlayerProposedDraw = false;
+            hasPlayerDeniedDraw = false;
         }
 
         public void run() {
@@ -328,7 +361,7 @@ public class Server extends Thread {
                  * possibly remove writer join so that
                  * the client can close
                  */
-                responseWriter.join();
+//                responseWriter.join();
                 requestReader.join();
             } catch (InterruptedException e) {
                 e.printStackTrace();

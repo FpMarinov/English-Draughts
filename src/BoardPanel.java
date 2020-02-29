@@ -40,4 +40,8 @@ public class BoardPanel extends JPanel {
             }
         }
     }
+
+    public void updateBoard(Board board) {
+
+    }
 }
