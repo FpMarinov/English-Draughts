@@ -40,7 +40,8 @@ public class Client extends JFrame implements ActionListener, MouseListener {
     private final JTextField mainMessageField;
     private final JTextField secondaryMessageField;
     private final BoardPanel boardPanel;
-
+    private int selectedRow;
+    private int selectedColumn;
 
     public Client() {
 
@@ -250,9 +251,8 @@ public class Client extends JFrame implements ActionListener, MouseListener {
     @Override
     public void mouseClicked(MouseEvent e) {
         TilePanel source = (TilePanel) e.getSource();
-        int row = source.getRow();
-        int column = source.getColumn();
-        mainMessageField.setText(row + " " + column);
+        selectedRow = source.getRow();
+        selectedColumn = source.getColumn();
     }
 
     //methods that aren't implemented from MouseListener
