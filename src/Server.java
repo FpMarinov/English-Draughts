@@ -33,7 +33,7 @@ public class Server extends Thread {
 
                         ///////DEAL WITH REQUEST////////////
 
-                        if (request.isProposePiece()) {
+                        if (request.hasProposedPiece()) {
                             //deal with a piece proposal
                             int row = request.getProposedRow();
                             int column = request.getProposedColumn();
@@ -46,7 +46,7 @@ public class Server extends Thread {
                                 needToProposePiece = true;
                                 needToProposeMove = false;
                             }
-                        } else if (request.isProposeMove()) {
+                        } else if (request.hasProposedMove()) {
                             //deal with a move proposal
                             int row = request.getProposedRow();
                             int column = request.getProposedColumn();
@@ -62,11 +62,11 @@ public class Server extends Thread {
                         }
 
                         //deal with a draw proposal
-                        if (request.isProposeDraw()) {
+                        if (request.hasProposedDraw()) {
                             drawProposals++;
                         }
                         //deal with a draw denial
-                        if (request.isDenyDraw()) {
+                        if (request.hasDeniedDraw()) {
                             drawProposals = 0;
                             deniedDraw = true;
                         }
@@ -86,7 +86,7 @@ public class Server extends Thread {
 
             private void turnEnd(ResponsePacket response) {
                 //turn needs to end
-                response.setEndTurn(true);
+                response.setHasToEndTurn(true);
                 //signal the writer thread of the
                 //other client
                 ACTIVE_PLAYER_CONDITION.signal();
@@ -178,11 +178,11 @@ public class Server extends Thread {
 
                         //deal with a draw proposal
                         if (drawProposals == 1) {
-                            response.setOpponentProposedDraw(true);
+                            response.setHasOpponentProposedDraw(true);
                         }
                         //deal with draw denial
                         if (deniedDraw) {
-                            response.setOpponentDeniedDraw(true);
+                            response.setHasOpponentDeniedDraw(true);
                             deniedDraw = false;
                         }
 
@@ -211,7 +211,7 @@ public class Server extends Thread {
                             response.setGameOver(true);
                             if (!draw) {
                                 if (winningPlayerID == playerID) {
-                                    response.setPlayerWon(true);
+                                    response.setHasPlayerWon(true);
                                 }
                             } else {
                                 response.setDraw(true);
@@ -224,7 +224,7 @@ public class Server extends Thread {
                         } else {
                             //game not over, turn start normally
                             //propose a piece to move
-                            response.setNeedToProposePiece(true);
+                            response.setHasToProposePiece(true);
                             needToProposePiece = false;
                             if (errorMessage != null) {
                                 //handle incorrect piece proposal
@@ -234,7 +234,7 @@ public class Server extends Thread {
                         }
                     } else if (needToProposeMove) {
                         //propose a move
-                        response.setNeedToProposeMove(true);
+                        response.setHasToProposeMove(true);
                         needToProposeMove = false;
                         if (errorMessage != null) {
                             //handle incorrect move proposal

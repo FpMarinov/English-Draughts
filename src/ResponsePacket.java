@@ -2,104 +2,104 @@ import java.io.Serializable;
 
 public class ResponsePacket implements Serializable {
 
-    private boolean firstTurn;
+    private boolean isFirstTurn;
     private String errorMessage;
     private Board board;
-    private boolean gameOver;
-    private boolean draw;
-    private boolean playerWon;
-    private boolean opponentProposedDraw;
-    private boolean opponentDeniedDraw;
-    private boolean endTurn;
-    private boolean needToProposePiece;
-    private boolean needToProposeMove;
+    private boolean isGameOver;
+    private boolean isDraw;
+    private boolean hasPlayerWon;
+    private boolean hasOpponentProposedDraw;
+    private boolean hasOpponentDeniedDraw;
+    private boolean hasToEndTurn;
+    private boolean hasToProposePiece;
+    private boolean hasToProposeMove;
 
 
     public ResponsePacket(Board board) {
         //default values
         this.board = board;
         errorMessage = null;
-        firstTurn = false;
-        gameOver = false;
-        draw = false;
-        playerWon = false;
-        opponentProposedDraw = false;
-        opponentDeniedDraw = false;
-        endTurn = false;
-        needToProposePiece = false;
-        needToProposeMove = false;
+        isFirstTurn = false;
+        isGameOver = false;
+        isDraw = false;
+        hasPlayerWon = false;
+        hasOpponentProposedDraw = false;
+        hasOpponentDeniedDraw = false;
+        hasToEndTurn = false;
+        hasToProposePiece = false;
+        hasToProposeMove = false;
     }
 
-    public boolean isPlayerWon() {
-        return playerWon;
+    public boolean hasPlayerWon() {
+        return hasPlayerWon;
     }
 
-    public void setPlayerWon(boolean playerWon) {
-        this.playerWon = playerWon;
+    public void setHasPlayerWon(boolean hasPlayerWon) {
+        this.hasPlayerWon = hasPlayerWon;
     }
 
     public boolean isFirstTurn() {
-        return firstTurn;
+        return isFirstTurn;
     }
 
     public void setFirstTurn(boolean firstTurn) {
-        this.firstTurn = firstTurn;
+        this.isFirstTurn = firstTurn;
     }
 
-    public boolean isNeedToProposePiece() {
-        return needToProposePiece;
+    public boolean hasToProposePiece() {
+        return hasToProposePiece;
     }
 
-    public void setNeedToProposePiece(boolean needToProposePiece) {
-        this.needToProposePiece = needToProposePiece;
+    public void setHasToProposePiece(boolean hasToProposePiece) {
+        this.hasToProposePiece = hasToProposePiece;
     }
 
-    public boolean isNeedToProposeMove() {
-        return needToProposeMove;
+    public boolean hasToProposeMove() {
+        return hasToProposeMove;
     }
 
-    public void setNeedToProposeMove(boolean needToProposeMove) {
-        this.needToProposeMove = needToProposeMove;
+    public void setHasToProposeMove(boolean hasToProposeMove) {
+        this.hasToProposeMove = hasToProposeMove;
     }
 
-    public boolean isEndTurn() {
-        return endTurn;
+    public boolean hasToEndTurn() {
+        return hasToEndTurn;
     }
 
-    public void setEndTurn(boolean endTurn) {
-        this.endTurn = endTurn;
+    public void setHasToEndTurn(boolean hasToEndTurn) {
+        this.hasToEndTurn = hasToEndTurn;
     }
 
     public boolean isGameOver() {
-        return gameOver;
+        return isGameOver;
     }
 
     public void setGameOver(boolean gameOver) {
-        this.gameOver = gameOver;
+        this.isGameOver = gameOver;
     }
 
     public boolean isDraw() {
-        return draw;
+        return isDraw;
     }
 
     public void setDraw(boolean draw) {
-        this.draw = draw;
+        this.isDraw = draw;
     }
 
-    public boolean isOpponentProposedDraw() {
-        return opponentProposedDraw;
+    public boolean hasOpponentProposedDraw() {
+        return hasOpponentProposedDraw;
     }
 
-    public void setOpponentProposedDraw(boolean opponentProposedDraw) {
-        this.opponentProposedDraw = opponentProposedDraw;
+    public void setHasOpponentProposedDraw(boolean hasOpponentProposedDraw) {
+        this.hasOpponentProposedDraw = hasOpponentProposedDraw;
     }
 
-    public boolean isOpponentDeniedDraw() {
-        return opponentDeniedDraw;
+    public boolean hasOpponentDeniedDraw() {
+        return hasOpponentDeniedDraw;
     }
 
-    public void setOpponentDeniedDraw(boolean opponentDeniedDraw) {
-        this.opponentDeniedDraw = opponentDeniedDraw;
+    public void setHasOpponentDeniedDraw(boolean hasOpponentDeniedDraw) {
+        this.hasOpponentDeniedDraw = hasOpponentDeniedDraw;
     }
 
     public Board getBoard() {

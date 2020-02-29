@@ -2,44 +2,44 @@ import java.io.Serializable;
 
 public class RequestPacket implements Serializable {
 
-    private boolean proposeDraw;
-    private boolean denyDraw;
-    private boolean proposePiece;
-    private boolean proposeMove;
+    private boolean hasProposedDraw;
+    private boolean hasDeniedDraw;
+    private boolean hasProposedPiece;
+    private boolean hasProposedMove;
     private int proposedRow;
     private int proposedColumn;
 
 
-    public boolean isDenyDraw() {
-        return denyDraw;
+    public boolean hasDeniedDraw() {
+        return hasDeniedDraw;
     }
 
-    public void setDenyDraw(boolean denyDraw) {
-        this.denyDraw = denyDraw;
+    public void setHasDeniedDraw(boolean hasDeniedDraw) {
+        this.hasDeniedDraw = hasDeniedDraw;
     }
 
-    public boolean isProposeDraw() {
-        return proposeDraw;
+    public boolean hasProposedDraw() {
+        return hasProposedDraw;
     }
 
-    public void setProposeDraw(boolean proposeDraw) {
-        this.proposeDraw = proposeDraw;
+    public void setHasProposedDraw(boolean hasProposedDraw) {
+        this.hasProposedDraw = hasProposedDraw;
     }
 
-    public boolean isProposePiece() {
-        return proposePiece;
+    public boolean hasProposedPiece() {
+        return hasProposedPiece;
     }
 
-    public void setProposePiece(boolean proposePiece) {
-        this.proposePiece = proposePiece;
+    public void setHasProposedPiece(boolean hasProposedPiece) {
+        this.hasProposedPiece = hasProposedPiece;
     }
 
-    public boolean isProposeMove() {
-        return proposeMove;
+    public boolean hasProposedMove() {
+        return hasProposedMove;
     }
 
-    public void setProposeMove(boolean proposeMove) {
-        this.proposeMove = proposeMove;
+    public void setHasProposedMove(boolean hasProposedMove) {
+        this.hasProposedMove = hasProposedMove;
     }
 
     public int getProposedRow() {
