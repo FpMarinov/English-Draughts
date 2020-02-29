@@ -3,11 +3,20 @@ import java.io.Serializable;
 public class RequestPacket implements Serializable {
 
     private boolean proposeDraw;
+    private boolean denyDraw;
     private boolean proposePiece;
     private boolean proposeMove;
     private int proposedRow;
     private int proposedColumn;
-    private boolean requestNewGame;
+
+
+    public boolean isDenyDraw() {
+        return denyDraw;
+    }
+
+    public void setDenyDraw(boolean denyDraw) {
+        this.denyDraw = denyDraw;
+    }
 
     public boolean isProposeDraw() {
         return proposeDraw;
@@ -49,11 +58,4 @@ public class RequestPacket implements Serializable {
         this.proposedColumn = proposedColumn;
     }
 
-    public boolean isRequestNewGame() {
-        return requestNewGame;
-    }
-
-    public void setRequestNewGame(boolean requestNewGame) {
-        this.requestNewGame = requestNewGame;
-    }
 }

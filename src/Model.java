@@ -55,10 +55,10 @@ public class Model {
      *
      * @param row row of proposed piece
      * @param column column of proposed piece
-     * @throws NotJumpablePieceException if the active player has a piece that can jump and hasn't selected it
+     * @throws PieceCantJumpException if the active player has a piece that can jump and hasn't selected it
      * @throws NotOwnedPieceException if the active player hasn't selected a piece he owns
      */
-    public void proposeActivePiece(int row, int column) throws NotJumpablePieceException, NotOwnedPieceException {
+    public void proposeActivePiece(int row, int column) throws PieceCantJumpException, NotOwnedPieceException {
         Piece proposedPiece = board.getPiece(row,column);
 
         if(proposedPiece == null || !proposedPiece.isOwnedBy(activePlayer)) {
@@ -67,7 +67,7 @@ public class Model {
 
         if(playerCanJump(activePlayer)) {
             if(!board.pieceCanJump(proposedPiece)) {
-                throw new NotJumpablePieceException();
+                throw new PieceCantJumpException();
             }
         }
 

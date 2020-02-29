@@ -8,13 +8,12 @@ public class ResponsePacket implements Serializable {
     private boolean gameOver;
     private boolean draw;
     private boolean playerWon;
-    private boolean proposedDraw;
-    private boolean deniedDraw;
+    private boolean opponentProposedDraw;
+    private boolean opponentDeniedDraw;
     private boolean endTurn;
     private boolean needToProposePiece;
     private boolean needToProposeMove;
-    private boolean proposedNewGame;
-    private boolean deniedNewGame;
+
 
     public ResponsePacket(Board board) {
         //default values
@@ -24,10 +23,8 @@ public class ResponsePacket implements Serializable {
         gameOver = false;
         draw = false;
         playerWon = false;
-        proposedDraw = false;
-        deniedDraw = false;
-        proposedNewGame = false;
-        deniedNewGame = false;
+        opponentProposedDraw = false;
+        opponentDeniedDraw = false;
         endTurn = false;
         needToProposePiece = false;
         needToProposeMove = false;
@@ -89,20 +86,20 @@ public class ResponsePacket implements Serializable {
         this.draw = draw;
     }
 
-    public boolean isProposedDraw() {
-        return proposedDraw;
+    public boolean isOpponentProposedDraw() {
+        return opponentProposedDraw;
     }
 
-    public void setProposedDraw(boolean proposedDraw) {
-        this.proposedDraw = proposedDraw;
+    public void setOpponentProposedDraw(boolean opponentProposedDraw) {
+        this.opponentProposedDraw = opponentProposedDraw;
     }
 
-    public boolean isDeniedDraw() {
-        return deniedDraw;
+    public boolean isOpponentDeniedDraw() {
+        return opponentDeniedDraw;
     }
 
-    public void setDeniedDraw(boolean deniedDraw) {
-        this.deniedDraw = deniedDraw;
+    public void setOpponentDeniedDraw(boolean opponentDeniedDraw) {
+        this.opponentDeniedDraw = opponentDeniedDraw;
     }
 
     public Board getBoard() {
@@ -121,19 +118,4 @@ public class ResponsePacket implements Serializable {
         this.errorMessage = errorMessage;
     }
 
-    public boolean isProposedNewGame() {
-        return proposedNewGame;
-    }
-
-    public void setProposedNewGame(boolean proposedNewGame) {
-        this.proposedNewGame = proposedNewGame;
-    }
-
-    public boolean isDeniedNewGame() {
-        return deniedNewGame;
-    }
-
-    public void setDeniedNewGame(boolean deniedNewGame) {
-        this.deniedNewGame = deniedNewGame;
-    }
 }
