@@ -132,7 +132,7 @@ public class Client extends JFrame implements ActionListener, MouseListener {
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        TilePile source = (TilePile) e.getSource();
+        TilePanel source = (TilePanel) e.getSource();
         int row = source.getRow();
         int column = source.getColumn();
         messageField.setText(row + " " + column);

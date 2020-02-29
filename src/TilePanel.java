@@ -2,13 +2,13 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseListener;
 
-public class TilePile extends JPanel {
+public class TilePanel extends JPanel {
 
     private final Color backgroundColor;
     private final int row;
     private final int column;
 
-    public TilePile(MouseListener mouseListener, Color backgroundColor, int row, int column) {
+    public TilePanel(MouseListener mouseListener, Color backgroundColor, int row, int column) {
         this.backgroundColor = backgroundColor;
         setBackground(backgroundColor);
         this.row = row;
