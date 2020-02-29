@@ -39,12 +39,12 @@ public class Server extends Thread {
                             int column = request.getProposedColumn();
                             try {
                                 MODEL.proposeActivePiece(row, column);
-                                needToProposePiece = false;
-                                needToProposeMove = true;
+                                hasToProposePiece = false;
+                                hasToProposeMove = true;
                             } catch (PieceCantJumpException | NotOwnedPieceException e) {
                                 errorMessage = e.getMessage();
-                                needToProposePiece = true;
-                                needToProposeMove = false;
+                                hasToProposePiece = true;
+                                hasToProposeMove = false;
                             }
                         } else if (request.hasProposedMove()) {
                             //deal with a move proposal
@@ -54,10 +54,10 @@ public class Server extends Thread {
                                 //try and propose a move and if successful
                                 //record if the player needs to make another
                                 //move in needToProposeMove
-                                needToProposeMove = MODEL.proposeActivePieceMove(row, column);
+                                hasToProposeMove = MODEL.proposeActivePieceMove(row, column);
                             } catch (IllegalMoveException e) {
                                 errorMessage = e.getMessage();
-                                needToProposeMove = true;
+                                hasToProposeMove = true;
                             }
                         }
 
@@ -68,7 +68,7 @@ public class Server extends Thread {
                         //deal with a draw denial
                         if (request.hasDeniedDraw()) {
                             drawProposals = 0;
-                            deniedDraw = true;
+                            isDeniedDraw = true;
                         }
 
                         hasRequest = true;
@@ -93,7 +93,7 @@ public class Server extends Thread {
 
                 //change active player
                 int otherPlayerID = 0;
-                switch (playerID) {
+                switch (PLAYER_ID) {
                     case 1:
                         otherPlayerID = 2;
                         break;
@@ -106,13 +106,13 @@ public class Server extends Thread {
             }
 
             public void run() {
-                while (!client.isClosed()) {
+                while (!CLIENT.isClosed()) {
                     PLAYER_LOCK.lock();
 
                     //only the writer thread that belongs to the client
                     //for the active player can continue
                     //otherwise wait to become active
-                    while (MODEL.getActivePlayerID() != playerID) {
+                    while (MODEL.getActivePlayerID() != PLAYER_ID) {
                         try {
                             ACTIVE_PLAYER_CONDITION.await();
                         } catch (InterruptedException e) {
@@ -162,8 +162,8 @@ public class Server extends Thread {
                     } else if (drawProposals == 2) {
                         //deal with an agreed upon draw
                         //at any point during the turn
-                        gameOver = true;
-                        draw = true;
+                        isGameOver = true;
+                        isDraw = true;
 
                         response.setGameOver(true);
                         response.setDraw(true);
@@ -173,7 +173,7 @@ public class Server extends Thread {
                         //this player has been signalled
                         //about the end of the game
                         gameOverSignals++;
-                    } else if (needToProposePiece) {
+                    } else if (hasToProposePiece) {
                         //turn start
 
                         //deal with a draw proposal
@@ -181,36 +181,36 @@ public class Server extends Thread {
                             response.setHasOpponentProposedDraw(true);
                         }
                         //deal with draw denial
-                        if (deniedDraw) {
+                        if (isDeniedDraw) {
                             response.setHasOpponentDeniedDraw(true);
-                            deniedDraw = false;
+                            isDeniedDraw = false;
                         }
 
                         //check for first turn
-                        if (firstTurn) {
+                        if (isFirstTurn) {
                             response.setFirstTurn(true);
-                            firstTurn = false;
+                            isFirstTurn = false;
                         }
 
                         //check for game over at turn start
-                        if (!gameOver) {
+                        if (!isGameOver) {
                             try {
                                 winningPlayerID = MODEL.checkGameOverReturnGameWinnerID();
                                 if (winningPlayerID != -1) {
-                                    gameOver = true;
+                                    isGameOver = true;
                                 }
                             } catch (DrawException e) {
-                                gameOver = true;
-                                draw = true;
+                                isGameOver = true;
+                                isDraw = true;
                             }
                         }
 
-                        if (gameOver) {
+                        if (isGameOver) {
                             //game over
 
                             response.setGameOver(true);
-                            if (!draw) {
-                                if (winningPlayerID == playerID) {
+                            if (!isDraw) {
+                                if (winningPlayerID == PLAYER_ID) {
                                     response.setHasPlayerWon(true);
                                 }
                             } else {
@@ -225,17 +225,17 @@ public class Server extends Thread {
                             //game not over, turn start normally
                             //propose a piece to move
                             response.setHasToProposePiece(true);
-                            needToProposePiece = false;
+                            hasToProposePiece = false;
                             if (errorMessage != null) {
                                 //handle incorrect piece proposal
                                 response.setErrorMessage(errorMessage);
                                 errorMessage = null;
                             }
                         }
-                    } else if (needToProposeMove) {
+                    } else if (hasToProposeMove) {
                         //propose a move
                         response.setHasToProposeMove(true);
-                        needToProposeMove = false;
+                        hasToProposeMove = false;
                         if (errorMessage != null) {
                             //handle incorrect move proposal
                             response.setErrorMessage(errorMessage);
@@ -244,7 +244,7 @@ public class Server extends Thread {
                     } else {
 
                         //setup the next turn start
-                        needToProposePiece = true;
+                        hasToProposePiece = true;
 
 
                         turnEnd(response);
@@ -276,29 +276,29 @@ public class Server extends Thread {
             }
         }
 
-        private Socket client = null;
-        private int playerID;
+        private final Socket CLIENT;
+        private final int PLAYER_ID;
         private final ReentrantLock READ_WRITE_LOCK;
         private final Condition REQUEST_CONDITION;
         private boolean hasRequest;
-        private boolean firstTurn;
-        private ObjectOutputStream outputStream = null;
-        private ObjectInputStream inputStream = null;
-        private boolean needToProposePiece;
-        private boolean needToProposeMove;
+        private boolean isFirstTurn;
+        private ObjectOutputStream outputStream;
+        private ObjectInputStream inputStream;
+        private boolean hasToProposePiece;
+        private boolean hasToProposeMove;
         private String errorMessage;
 
         public ClientThread(Socket client, int playerID) {
-            this.client = client;
-            this.playerID = playerID;
+            this.CLIENT = client;
+            this.PLAYER_ID = playerID;
             READ_WRITE_LOCK = new ReentrantLock();
             REQUEST_CONDITION = READ_WRITE_LOCK.newCondition();
 
             resetClientThreadFields();
 
             try {
-                outputStream = new ObjectOutputStream(this.client.getOutputStream());
-                inputStream = new ObjectInputStream(this.client.getInputStream());
+                outputStream = new ObjectOutputStream(this.CLIENT.getOutputStream());
+                inputStream = new ObjectInputStream(this.CLIENT.getInputStream());
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -306,9 +306,9 @@ public class Server extends Thread {
 
         public void resetClientThreadFields() {
             hasRequest = true;
-            firstTurn = true;
-            needToProposePiece = true;
-            needToProposeMove = false;
+            isFirstTurn = true;
+            hasToProposePiece = true;
+            hasToProposeMove = false;
             errorMessage = null;
         }
 
@@ -330,7 +330,7 @@ public class Server extends Thread {
                 e.printStackTrace();
             } finally {
                 try {
-                    client.close();
+                    CLIENT.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -347,9 +347,9 @@ public class Server extends Thread {
     private final ReentrantLock PLAYER_LOCK;
     private final Condition ACTIVE_PLAYER_CONDITION;
     private int drawProposals;
-    private boolean deniedDraw;
-    private boolean gameOver;
-    private boolean draw;
+    private boolean isDeniedDraw;
+    private boolean isGameOver;
+    private boolean isDraw;
     private int winningPlayerID;
     private int gameOverSignals;
     private int fieldResets;
@@ -374,10 +374,10 @@ public class Server extends Thread {
 
     public void resetServerFields() {
         drawProposals = 0;
-        deniedDraw = false;
-        draw = false;
+        isDeniedDraw = false;
+        isDraw = false;
         winningPlayerID = -1;
-        gameOver = false;
+        isGameOver = false;
     }
 
     public void run() {
