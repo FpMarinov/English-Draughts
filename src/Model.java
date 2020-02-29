@@ -2,9 +2,9 @@ import java.awt.*;
 
 public class Model {
 
-    private Player player1;
-    private Player player2;
-    private Board board;
+    private final Player player1;
+    private final Player player2;
+    private final Board board;
     private Player activePlayer;
     private Piece activePiece;
 

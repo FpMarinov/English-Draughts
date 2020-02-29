@@ -4,8 +4,8 @@ import java.io.Serializable;
 public class Piece implements Serializable {
 
     private boolean isKing;
-    private Color color;
-    private transient Player pieceOwner;
+    private final Color color;
+    private final transient Player pieceOwner;
     private transient int row;
     private transient int column;
     private transient boolean isInGame;

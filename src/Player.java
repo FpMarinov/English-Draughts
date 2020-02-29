@@ -3,7 +3,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Player {
-    private List<Piece> pieces;
+    private final List<Piece> pieces;
 
     public Player(Color pieceColor) {
         pieces = new ArrayList<>(12);

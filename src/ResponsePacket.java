@@ -13,7 +13,7 @@ public class ResponsePacket implements Serializable {
     private boolean hasToEndTurn;
     private boolean hasToProposePiece;
     private boolean hasToProposeMove;
-
+    private boolean isNewGameAboutToBegin;
 
     public ResponsePacket(Board board) {
         //default values
@@ -28,6 +28,15 @@ public class ResponsePacket implements Serializable {
         hasToEndTurn = false;
         hasToProposePiece = false;
         hasToProposeMove = false;
+        isNewGameAboutToBegin = false;
+    }
+
+    public boolean isNewGameAboutToBegin() {
+        return isNewGameAboutToBegin;
+    }
+
+    public void setNewGameAboutToBegin(boolean newGameAboutToBegin) {
+        isNewGameAboutToBegin = newGameAboutToBegin;
     }
 
     public boolean hasPlayerWon() {

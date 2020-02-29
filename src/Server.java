@@ -17,7 +17,7 @@ public class Server extends Thread {
                 RequestPacket request;
                 try {
                     while ((request = (RequestPacket) inputStream.readObject()) != null) {
-                        READ_WRITE_LOCK.lock();
+                        readWriteLock.lock();
 
                         //if there already was a request the reader thread for this
                         //client waits(this shouldn't normally happen as requests
@@ -25,7 +25,7 @@ public class Server extends Thread {
                         //has been received and this needs to be enforced by the client GUI
                         while (hasRequest) {
                             try {
-                                REQUEST_CONDITION.await();
+                                requestCondition.await();
                             } catch (InterruptedException e) {
                                 e.printStackTrace();
                             }
@@ -38,7 +38,7 @@ public class Server extends Thread {
                             int row = request.getProposedRow();
                             int column = request.getProposedColumn();
                             try {
-                                MODEL.proposeActivePiece(row, column);
+                                model.proposeActivePiece(row, column);
                                 hasToProposePiece = false;
                                 hasToProposeMove = true;
                             } catch (PieceCantJumpException | NotOwnedPieceException e) {
@@ -54,7 +54,7 @@ public class Server extends Thread {
                                 //try and propose a move and if successful
                                 //record if the player needs to make another
                                 //move in needToProposeMove
-                                hasToProposeMove = MODEL.proposeActivePieceMove(row, column);
+                                hasToProposeMove = model.proposeActivePieceMove(row, column);
                             } catch (IllegalMoveException e) {
                                 errorMessage = e.getMessage();
                                 hasToProposeMove = true;
@@ -72,8 +72,8 @@ public class Server extends Thread {
                         }
 
                         hasRequest = true;
-                        REQUEST_CONDITION.signal();
-                        READ_WRITE_LOCK.unlock();
+                        requestCondition.signal();
+                        readWriteLock.unlock();
                     }
                     inputStream.close();
                 } catch (ClassNotFoundException | IOException e) {
@@ -89,11 +89,11 @@ public class Server extends Thread {
                 response.setHasToEndTurn(true);
                 //signal the writer thread of the
                 //other client
-                ACTIVE_PLAYER_CONDITION.signal();
+                activePlayerCondition.signal();
 
                 //change active player
                 int otherPlayerID = 0;
-                switch (PLAYER_ID) {
+                switch (playerID) {
                     case 1:
                         otherPlayerID = 2;
                         break;
@@ -102,25 +102,25 @@ public class Server extends Thread {
                         otherPlayerID = 1;
                         break;
                 }
-                MODEL.setActivePlayer(otherPlayerID);
+                model.setActivePlayer(otherPlayerID);
             }
 
             public void run() {
-                while (!CLIENT.isClosed()) {
-                    PLAYER_LOCK.lock();
+                while (!client.isClosed()) {
+                    playerLock.lock();
 
                     //only the writer thread that belongs to the client
                     //for the active player can continue
                     //otherwise wait to become active
-                    while (MODEL.getActivePlayerID() != PLAYER_ID) {
+                    while (model.getActivePlayerID() != playerID) {
                         try {
-                            ACTIVE_PLAYER_CONDITION.await();
+                            activePlayerCondition.await();
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
                     }
 
-                    READ_WRITE_LOCK.lock();
+                    readWriteLock.lock();
 
                     //if there is a request, the writer thread for
                     //this client continues, otherwise it waits
@@ -129,7 +129,7 @@ public class Server extends Thread {
                     // request packet)
                     while (!hasRequest) {
                         try {
-                            REQUEST_CONDITION.await();
+                            requestCondition.await();
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
@@ -137,7 +137,7 @@ public class Server extends Thread {
 
                     //make a response object and reference the game board
                     //in it
-                    ResponsePacket response = new ResponsePacket(MODEL.getBoard());
+                    ResponsePacket response = new ResponsePacket(model.getBoard());
 
                     if (gameOverSignals == 2) {
                         //game has finished and both
@@ -147,6 +147,10 @@ public class Server extends Thread {
                         resetClientThreadFields();
                         resetServerFields();
                         fieldResets++;
+
+                        //inform client that a
+                        //new game is about to begin
+                        response.setNewGameAboutToBegin(true);
 
                         //if both resets have happened
                         //make sure the next turn skips
@@ -195,7 +199,7 @@ public class Server extends Thread {
                         //check for game over at turn start
                         if (!isGameOver) {
                             try {
-                                winningPlayerID = MODEL.checkGameOverReturnGameWinnerID();
+                                winningPlayerID = model.checkGameOverReturnGameWinnerID();
                                 if (winningPlayerID != -1) {
                                     isGameOver = true;
                                 }
@@ -210,7 +214,7 @@ public class Server extends Thread {
 
                             response.setGameOver(true);
                             if (!isDraw) {
-                                if (winningPlayerID == PLAYER_ID) {
+                                if (winningPlayerID == playerID) {
                                     response.setHasPlayerWon(true);
                                 }
                             } else {
@@ -262,11 +266,11 @@ public class Server extends Thread {
                     //clear last request
                     hasRequest = false;
                     //signal the read thread of the client
-                    REQUEST_CONDITION.signal();
+                    requestCondition.signal();
 
 
-                    READ_WRITE_LOCK.unlock();
-                    PLAYER_LOCK.unlock();
+                    readWriteLock.unlock();
+                    playerLock.unlock();
                 }
                 try {
                     outputStream.close();
@@ -276,10 +280,10 @@ public class Server extends Thread {
             }
         }
 
-        private final Socket CLIENT;
-        private final int PLAYER_ID;
-        private final ReentrantLock READ_WRITE_LOCK;
-        private final Condition REQUEST_CONDITION;
+        private final Socket client;
+        private final int playerID;
+        private final ReentrantLock readWriteLock;
+        private final Condition requestCondition;
         private boolean hasRequest;
         private boolean isFirstTurn;
         private ObjectOutputStream outputStream;
@@ -289,16 +293,16 @@ public class Server extends Thread {
         private String errorMessage;
 
         public ClientThread(Socket client, int playerID) {
-            this.CLIENT = client;
-            this.PLAYER_ID = playerID;
-            READ_WRITE_LOCK = new ReentrantLock();
-            REQUEST_CONDITION = READ_WRITE_LOCK.newCondition();
+            this.client = client;
+            this.playerID = playerID;
+            readWriteLock = new ReentrantLock();
+            requestCondition = readWriteLock.newCondition();
 
             resetClientThreadFields();
 
             try {
-                outputStream = new ObjectOutputStream(this.CLIENT.getOutputStream());
-                inputStream = new ObjectInputStream(this.CLIENT.getInputStream());
+                outputStream = new ObjectOutputStream(this.client.getOutputStream());
+                inputStream = new ObjectInputStream(this.client.getInputStream());
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -330,7 +334,7 @@ public class Server extends Thread {
                 e.printStackTrace();
             } finally {
                 try {
-                    CLIENT.close();
+                    client.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -340,12 +344,11 @@ public class Server extends Thread {
 
     }
 
-    private final int PORT;
-    private final Random RANDOM;
-    private final Model MODEL;
+    private static final int PORT = 8765;
+    private final Model model;
     private ServerSocket server;
-    private final ReentrantLock PLAYER_LOCK;
-    private final Condition ACTIVE_PLAYER_CONDITION;
+    private final ReentrantLock playerLock;
+    private final Condition activePlayerCondition;
     private int drawProposals;
     private boolean isDeniedDraw;
     private boolean isGameOver;
@@ -355,10 +358,8 @@ public class Server extends Thread {
     private int fieldResets;
 
     public Server() {
-        PORT = 8765;
-        RANDOM = new Random();
-        MODEL = new Model();
 
+        model = new Model();
         resetServerFields();
         gameOverSignals = 0;
         fieldResets = 0;
@@ -368,8 +369,8 @@ public class Server extends Thread {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        PLAYER_LOCK = new ReentrantLock();
-        ACTIVE_PLAYER_CONDITION = PLAYER_LOCK.newCondition();
+        playerLock = new ReentrantLock();
+        activePlayerCondition = playerLock.newCondition();
     }
 
     public void resetServerFields() {
@@ -381,8 +382,11 @@ public class Server extends Thread {
     }
 
     public void run() {
+
+        Random random = new Random();
+
         //PlayerID of 1st client to connect is randomly selected
-        int firstClientPlayerID = RANDOM.nextInt(2) + 1;
+        int firstClientPlayerID = random.nextInt(2) + 1;
 
         ClientThread player1Client = null;
         ClientThread player2Client = null;

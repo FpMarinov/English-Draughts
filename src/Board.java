@@ -2,9 +2,9 @@ import java.io.Serializable;
 
 public class Board implements Serializable {
 
-    private transient Player player1;
-    private transient Player player2;
-    private Piece[][] piecePositions;
+    private final transient Player player1;
+    private final transient Player player2;
+    private final Piece[][] piecePositions;
 
     public Board(Player player1, Player player2) {
         this.player1 = player1;
