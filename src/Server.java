@@ -62,7 +62,7 @@ public class Server extends Thread {
                         }
 
                         //deal with a draw proposal
-                        if (request.hasProposedDraw()) {
+                        if (request.hasProposedDraw() && !hasPlayerProposedDraw) {
                             drawProposals++;
                             hasPlayerProposedDraw = true;
                         }
@@ -178,6 +178,7 @@ public class Server extends Thread {
                         if (fieldResets == 2) {
                             fieldResets = 0;
                             gameOverSignals = 0;
+                            model.newGame();
                         }
 
                         //change player
@@ -290,8 +291,6 @@ public class Server extends Thread {
                         turnEnd(response);
                     }
 
-
-                    response.setBoard(model.getBoard());
 
                     //send response
                     try {

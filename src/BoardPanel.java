@@ -53,7 +53,10 @@ public class BoardPanel extends JPanel {
                 } else {
                     tiles[i][j].updateTile(board.getPiece(7 - i,7 - j));
                 }
+
+
             }
         }
+        repaint();
     }
 }

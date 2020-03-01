@@ -24,6 +24,7 @@ public class Client extends JFrame implements ActionListener, MouseListener {
                 return null;
             }
         }
+
     }
 
 
@@ -141,7 +142,6 @@ public class Client extends JFrame implements ActionListener, MouseListener {
 
         //update board
         boardPanel.updateBoard(response.getBoard(),hasToFlipBoard);
-        
 
         if (response.isGameOver()) {
             //handle game over
@@ -273,6 +273,11 @@ public class Client extends JFrame implements ActionListener, MouseListener {
             } else if(hasToProposeMove) {
                 request.setHasProposedMove(true);
             }
+
+            hasToProposeMove = false;
+            hasToProposePiece = false;
+            hasDeniedDraw = false;
+            hasProposedDraw = false;
 
             disableButtons();
             sendRequest(request);

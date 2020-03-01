@@ -30,10 +30,12 @@ public class TilePanel extends JPanel {
             pieceColor = piece.getColor();
             isPieceKing = piece.isKing();
         }
-        repaint();
+        System.out.println("Update tile called.");
     }
 
     public void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        System.out.println("Paint component called");
 
         int widthTile = getWidth();
         int heightTile = getHeight();
@@ -41,8 +43,7 @@ public class TilePanel extends JPanel {
         Graphics2D g2 = (Graphics2D) g;
 
         //empty tile
-        g2.setColor(backgroundColor);
-        g2.fillRect(0,0,widthTile,heightTile);
+        setBackground(backgroundColor);
 
         if(hasPiece) {
             //there is a piece on the tile
