@@ -30,7 +30,7 @@ public class Client extends JFrame implements ActionListener, MouseListener {
 
     private static final int PORT = 8765;
     private static final String SERVER_IP = "127.0.0.1";
-    private static final int UNIT = 50;
+    private static final int UNIT = 40;
     private Socket server = null;
     private ObjectInputStream inputStream;
     private ObjectOutputStream outputStream;
@@ -79,7 +79,7 @@ public class Client extends JFrame implements ActionListener, MouseListener {
         secondaryMessageField.setEditable(false);
 
 
-        setSize(12 * UNIT, 16 * UNIT);
+        setSize(17 * UNIT, 20 * UNIT);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setTitle("Draughts");
         setVisible(true);
@@ -175,9 +175,9 @@ public class Client extends JFrame implements ActionListener, MouseListener {
         } else if (response.hasToProposePiece()) {
             if(response.isFirstTurn()) {
                 mainMessageField.setText("The game has begun. Choose your active piece " +
-                        "by clicking it and pressing \"submit\".");
+                        "by clicking it and pressing \"Submit\".");
             } else {
-                mainMessageField.setText("Choose your active piece by clicking it and pressing \"submit\".");
+                mainMessageField.setText("Choose your active piece by clicking it and pressing \"Submit\".");
             }
             hasToProposePiece = true;
             hasToProposeMove = false;
@@ -185,7 +185,7 @@ public class Client extends JFrame implements ActionListener, MouseListener {
 
             if (response.hasOpponentProposedDraw()) {
                 secondaryMessageField.setText("Your opponent proposed a draw. " +
-                        "Press \"Propose Draw\" to accept or \"Deny Draw\" to deny.");
+                        "Press \"Deny Draw\" to deny or \"Propose Draw\", then \"Submit\", to accept.");
                 denyDrawButton.setEnabled(true);
             } else if (response.hasOpponentDeniedDraw()) {
                 secondaryMessageField.setText("Your opponent has denied your draw proposal.");
@@ -200,7 +200,7 @@ public class Client extends JFrame implements ActionListener, MouseListener {
         } else if (response.hasToProposeMove()) {
 
             mainMessageField.setText("Choose where to move your active piece by clicking " +
-                    "the new position and pressing \"submit\".");
+                    "the new position and pressing \"Submit\".");
             hasToProposePiece = false;
             hasToProposeMove = true;
             enableSubmitAndProposeDrawButtons();
