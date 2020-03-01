@@ -17,7 +17,6 @@ public class Model {
 
     public void newGame() {
         board.reset();
-        activePlayer = player1;
     }
 
     public Board getBoard() {
