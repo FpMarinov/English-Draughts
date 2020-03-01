@@ -42,8 +42,21 @@ public class Client extends JFrame implements ActionListener, MouseListener {
     private final BoardPanel boardPanel;
     private int selectedRow;
     private int selectedColumn;
+    private boolean hasToFlipBoard;
+    private boolean hasProposedDraw;
+    private boolean hasDeniedDraw;
+    private boolean hasToProposePiece;
+    private boolean hasToProposeMove;
+
 
     public Client() {
+
+        selectedRow = 0;
+        selectedColumn = 0;
+        hasProposedDraw = false;
+        hasDeniedDraw = false;
+        hasToProposePiece = false;
+        hasToProposeMove = false;
 
         connectButton = new JButton("Connect");
         submitButton = new JButton("Submit");
@@ -124,9 +137,11 @@ public class Client extends JFrame implements ActionListener, MouseListener {
 
     public void handleResponse(ResponsePacket response) {
 
-        //update board
-        boardPanel.updateBoard(response.getBoard());
+        hasToFlipBoard = response.hasToFlipBoard();
 
+        //update board
+        boardPanel.updateBoard(response.getBoard(),hasToFlipBoard);
+        
 
         if (response.isGameOver()) {
             //handle game over
@@ -153,37 +168,25 @@ public class Client extends JFrame implements ActionListener, MouseListener {
             disableButtons();
         } else if (response.hasToEndTurn()) {
             mainMessageField.setText("Your turn has ended. Wait for your opponent's turn to finish.");
+            hasToProposePiece = false;
+            hasToProposeMove = false;
             secondaryMessageField.setText("");
             disableButtons();
-        } else if (response.isFirstTurn()) {
-
-            mainMessageField.setText("The game has begun. Choose your active piece " +
-                    "by clicking it and pressing \"submit\".");
-
-            enableSubmitAndProposeDrawButtons();
-
-            if (response.hasOpponentProposedDraw()) {
-                secondaryMessageField.setText("Your opponent proposed a draw. " +
-                        "Press \"Propose Draw\" to accept or \"Deny Draw\" to deny.");
-                denyDrawButton.setEnabled(true);
-                /**
-                 *
-                 */
-            }
-
-
         } else if (response.hasToProposePiece()) {
-
-            mainMessageField.setText("Choose your active piece by clicking it and pressing \"submit\".");
+            if(response.isFirstTurn()) {
+                mainMessageField.setText("The game has begun. Choose your active piece " +
+                        "by clicking it and pressing \"submit\".");
+            } else {
+                mainMessageField.setText("Choose your active piece by clicking it and pressing \"submit\".");
+            }
+            hasToProposePiece = true;
+            hasToProposeMove = false;
             enableSubmitAndProposeDrawButtons();
 
             if (response.hasOpponentProposedDraw()) {
                 secondaryMessageField.setText("Your opponent proposed a draw. " +
                         "Press \"Propose Draw\" to accept or \"Deny Draw\" to deny.");
                 denyDrawButton.setEnabled(true);
-                /**
-                 *
-                 */
             } else if (response.hasOpponentDeniedDraw()) {
                 secondaryMessageField.setText("Your opponent has denied your draw proposal.");
             } else {
@@ -198,6 +201,8 @@ public class Client extends JFrame implements ActionListener, MouseListener {
 
             mainMessageField.setText("Choose where to move your active piece by clicking " +
                     "the new position and pressing \"submit\".");
+            hasToProposePiece = false;
+            hasToProposeMove = true;
             enableSubmitAndProposeDrawButtons();
 
             //handle error message
@@ -245,14 +250,50 @@ public class Client extends JFrame implements ActionListener, MouseListener {
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == connectButton) {
             connect();
+        } else if(e.getSource() == denyDrawButton) {
+            hasDeniedDraw = true;
+            hasProposedDraw = false;
+            denyDrawButton.setEnabled(false);
+        } else if(e.getSource() == proposeDrawButton) {
+            hasDeniedDraw = false;
+            hasProposedDraw = true;
+            proposeDrawButton.setEnabled(false);
+            denyDrawButton.setEnabled(false);
+        } else if(e.getSource() == submitButton) {
+            RequestPacket request = new RequestPacket(selectedRow,selectedColumn);
+
+            if(hasProposedDraw) {
+                request.setHasProposedDraw(true);
+            } else if(hasDeniedDraw) {
+                request.setHasDeniedDraw(true);
+            }
+
+            if(hasToProposePiece) {
+                request.setHasProposedPiece(true);
+            } else if(hasToProposeMove) {
+                request.setHasProposedMove(true);
+            }
+
+            disableButtons();
+            sendRequest(request);
         }
     }
 
     @Override
     public void mouseClicked(MouseEvent e) {
         TilePanel source = (TilePanel) e.getSource();
-        selectedRow = source.getRow();
-        selectedColumn = source.getColumn();
+
+        //the server stores the board with player1 on top
+        //it is flipped on rendering if necessary
+        //flip selection if the board has been flipped
+
+        if(!hasToFlipBoard) {
+            selectedRow = source.getRow();
+            selectedColumn = source.getColumn();
+        }else {
+            selectedRow = 7 - source.getRow();
+            selectedColumn = 7 - source.getColumn();
+        }
     }
 
     //methods that aren't implemented from MouseListener
@@ -277,6 +318,7 @@ public class Client extends JFrame implements ActionListener, MouseListener {
 
             @Override
             public void run() {
+                //create two clients
                 new Client();
                 new Client();
             }

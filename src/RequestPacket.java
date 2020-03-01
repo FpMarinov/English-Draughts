@@ -9,6 +9,14 @@ public class RequestPacket implements Serializable {
     private int proposedRow;
     private int proposedColumn;
 
+    public RequestPacket(int proposedRow, int proposedColumn) {
+        hasProposedDraw = false;
+        hasDeniedDraw = false;
+        hasProposedPiece = false;
+        hasProposedMove = false;
+        this.proposedRow = proposedRow;
+        this.proposedColumn = proposedColumn;
+    }
 
     public boolean hasDeniedDraw() {
         return hasDeniedDraw;

@@ -41,7 +41,19 @@ public class BoardPanel extends JPanel {
         }
     }
 
-    public void updateBoard(Board board) {
+    public void updateBoard(Board board, boolean hasToFlipBoard) {
 
+        for(int i = 0; i < 8; i++) {
+            for(int j = 0; j < 8; j++) {
+
+                //the server stores the board with player1 on top
+                //flip it on rendering if necessary
+                if(!hasToFlipBoard) {
+                    tiles[i][j].updateTile(board.getPiece(i, j));
+                } else {
+                    tiles[i][j].updateTile(board.getPiece(7 - i,7 - j));
+                }
+            }
+        }
     }
 }

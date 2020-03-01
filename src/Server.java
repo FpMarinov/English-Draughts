@@ -106,6 +106,10 @@ public class Server extends Thread {
                         break;
                 }
                 model.setActivePlayer(otherPlayerID);
+
+                //reset hasRequest to account for extra response
+                //to "wake up" client
+                hasRequest = true;
             }
 
             public void run() {
@@ -138,9 +142,12 @@ public class Server extends Thread {
                         }
                     }
 
+                    //clear last request
+                    hasRequest = false;
+
                     //make a response object and reference the game board
                     //in it
-                    ResponsePacket response = new ResponsePacket(model.getBoard());
+                    ResponsePacket response = new ResponsePacket(model.getBoard(),playerID);
 
                     if (gameOverSignals == 2) {
                         //game has finished and both
@@ -284,6 +291,8 @@ public class Server extends Thread {
                     }
 
 
+                    response.setBoard(model.getBoard());
+
                     //send response
                     try {
                         outputStream.writeObject(response);
@@ -292,8 +301,7 @@ public class Server extends Thread {
                         e.printStackTrace();
                     }
 
-                    //clear last request
-                    hasRequest = false;
+
                     //signal the read thread of the client
                     requestCondition.signal();
 

@@ -14,9 +14,10 @@ public class ResponsePacket implements Serializable {
     private boolean hasToEndTurn;
     private boolean hasToProposePiece;
     private boolean hasToProposeMove;
+    private boolean hasToFlipBoard;
 
 
-    public ResponsePacket(Board board) {
+    public ResponsePacket(Board board, int playerID) {
         //default values
         this.board = board;
         errorMessage = null;
@@ -30,6 +31,26 @@ public class ResponsePacket implements Serializable {
         hasToProposePiece = false;
         hasToProposeMove = false;
         isNewGameAboutToBegin = false;
+
+        //the server stores the board with player1 on top
+        //flip it on rendering if necessary
+        switch (playerID) {
+            case 1:
+                hasToFlipBoard = true;
+                break;
+
+            case 2:
+                hasToFlipBoard = false;
+                break;
+        }
+    }
+
+    public boolean hasToFlipBoard() {
+        return hasToFlipBoard;
+    }
+
+    public void setHasToFlipBoard(boolean hasToFlipBoard) {
+        this.hasToFlipBoard = hasToFlipBoard;
     }
 
     public boolean isNewGameAboutToBegin() {
