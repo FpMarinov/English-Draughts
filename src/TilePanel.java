@@ -30,12 +30,12 @@ public class TilePanel extends JPanel {
             pieceColor = piece.getColor();
             isPieceKing = piece.isKing();
         }
-        System.out.println("Update tile called.");
+
     }
 
     public void paintComponent(Graphics g) {
         super.paintComponent(g);
-        System.out.println("Paint component called");
+
 
         int widthTile = getWidth();
         int heightTile = getHeight();
@@ -78,4 +78,5 @@ public class TilePanel extends JPanel {
     public int getColumn() {
         return column;
     }
+
 }

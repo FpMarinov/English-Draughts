@@ -41,7 +41,7 @@ public class Server extends Thread {
                                 model.proposeActivePiece(row, column);
                                 hasToProposePiece = false;
                                 hasToProposeMove = true;
-                            } catch (PieceCantJumpException | NotOwnedPieceException e) {
+                            } catch (PieceCantJumpException | NotOwnedPieceException | PieceCantMoveException e) {
                                 errorMessage = e.getMessage();
                                 hasToProposePiece = true;
                                 hasToProposeMove = false;
@@ -147,7 +147,7 @@ public class Server extends Thread {
 
                     //make a response object and reference the game board
                     //in it
-                    ResponsePacket response = new ResponsePacket(model.getBoard(),playerID);
+                    ResponsePacket response = new ResponsePacket(playerID);
 
                     if (gameOverSignals == 2) {
                         //game has finished and both
@@ -291,11 +291,13 @@ public class Server extends Thread {
                         turnEnd(response);
                     }
 
+                    response.setBoard(model.getBoard());
 
                     //send response
                     try {
                         outputStream.writeObject(response);
                         outputStream.flush();
+                        outputStream.reset();
                     } catch (IOException e) {
                         e.printStackTrace();
                     }

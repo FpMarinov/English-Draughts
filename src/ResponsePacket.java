@@ -17,9 +17,9 @@ public class ResponsePacket implements Serializable {
     private boolean hasToFlipBoard;
 
 
-    public ResponsePacket(Board board, int playerID) {
+    public ResponsePacket(int playerID) {
         //default values
-        this.board = board;
+        this.board = null;
         errorMessage = null;
         isFirstTurn = false;
         isGameOver = false;

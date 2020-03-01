@@ -220,6 +220,8 @@ public class Client extends JFrame implements ActionListener, MouseListener {
     public void sendRequest(RequestPacket request) {
         try {
             outputStream.writeObject(request);
+            outputStream.flush();
+            outputStream.reset();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -328,5 +330,6 @@ public class Client extends JFrame implements ActionListener, MouseListener {
                 new Client();
             }
         });
+
     }
 }
