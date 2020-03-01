@@ -16,6 +16,10 @@ public class Player {
         return pieces.get(index);
     }
 
+    public List<Piece> getPieces() {
+        return pieces;
+    }
+
     public List<Piece> getPiecesInGame() {
 
         List<Piece> piecesInGame = new ArrayList<>(12);
