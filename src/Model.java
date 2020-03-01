@@ -96,13 +96,18 @@ public class Model {
      */
     public boolean proposeActivePieceMove(int newRow, int newColumn) throws IllegalMoveException {
         if(board.isLegalMove(activePiece,newRow,newColumn)) {
+            //(legal move) and (can jump) = move is a jump
+            boolean isMoveAJump = board.pieceCanJump(activePiece);
+
             boolean becameKing = board.movePiece(activePiece,newRow,newColumn);
 
             if(becameKing) {
                 return false;
             }
 
-            return board.pieceCanJump(activePiece);
+            //if the previous move was a jump and the piece
+            //can still jump it must
+            return isMoveAJump && board.pieceCanJump(activePiece);
         } else {
             throw new IllegalMoveException();
         }
