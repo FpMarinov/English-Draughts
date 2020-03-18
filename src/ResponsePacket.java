@@ -19,7 +19,7 @@ public class ResponsePacket implements Serializable {
 
     public ResponsePacket(int playerID) {
         //default values
-        this.board = null;
+        board = null;
         errorMessage = null;
         isFirstTurn = false;
         isGameOver = false;
