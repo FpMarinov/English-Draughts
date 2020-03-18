@@ -149,7 +149,13 @@ public class Server extends Thread {
                     //in it
                     ResponsePacket response = new ResponsePacket(playerID);
 
-                    if (gameOverSignals == 2) {
+                    if (hasToDisplayInitialConnection) {
+                        response.setHasToDisplayInitialConnection(true);
+                        hasToDisplayInitialConnection = false;
+
+                        hasToProposePiece = true;
+                        turnEnd(response);
+                    } else if (gameOverSignals == 2) {
                         //game has finished and both
                         //players know about it
 
@@ -286,8 +292,6 @@ public class Server extends Thread {
 
                         //setup the next turn start
                         hasToProposePiece = true;
-
-
                         turnEnd(response);
                     }
 
@@ -331,12 +335,14 @@ public class Server extends Thread {
         private String errorMessage;
         private boolean hasPlayerProposedDraw;
         private boolean hasPlayerDeniedDraw;
+        private boolean hasToDisplayInitialConnection;
 
         public ClientThread(Socket client, int playerID) {
             this.client = client;
             this.playerID = playerID;
             readWriteLock = new ReentrantLock();
             requestCondition = readWriteLock.newCondition();
+            hasToDisplayInitialConnection = true;
 
             resetClientThreadFields();
 
@@ -366,10 +372,7 @@ public class Server extends Thread {
             requestReader.start();
 
             try {
-                /**
-                 * possibly remove writer join so that
-                 * the client can close
-                 */
+
 //                responseWriter.join();
                 requestReader.join();
             } catch (InterruptedException e) {

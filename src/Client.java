@@ -141,9 +141,12 @@ public class Client extends JFrame implements ActionListener, MouseListener {
         hasToFlipBoard = response.hasToFlipBoard();
 
         //update board
-        boardPanel.updateBoard(response.getBoard(),hasToFlipBoard);
+        boardPanel.updateBoard(response.getBoard(), hasToFlipBoard);
 
-        if (response.isGameOver()) {
+        if (response.hasToDisplayInitialConnection()) {
+            mainMessageField.setText("You have found an opponent.");
+            secondaryMessageField.setText("");
+        } else if (response.isGameOver()) {
             //handle game over
             if (response.isDraw()) {
                 //handle draw
@@ -173,7 +176,7 @@ public class Client extends JFrame implements ActionListener, MouseListener {
             secondaryMessageField.setText("");
             disableButtons();
         } else if (response.hasToProposePiece()) {
-            if(response.isFirstTurn()) {
+            if (response.isFirstTurn()) {
                 mainMessageField.setText("The game has begun. Choose your active piece " +
                         "by clicking it and pressing \"Submit\".");
             } else {
@@ -237,7 +240,7 @@ public class Client extends JFrame implements ActionListener, MouseListener {
         connectButton.setEnabled(false);
         mainMessageField.setText("Wait for another player to connect.");
 
-        try{
+        try {
             inputStream = new ObjectInputStream(server.getInputStream());
             outputStream = new ObjectOutputStream(server.getOutputStream());
         } catch (IOException e) {
@@ -252,27 +255,27 @@ public class Client extends JFrame implements ActionListener, MouseListener {
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == connectButton) {
             connect();
-        } else if(e.getSource() == denyDrawButton) {
+        } else if (e.getSource() == denyDrawButton) {
             hasDeniedDraw = true;
             hasProposedDraw = false;
             denyDrawButton.setEnabled(false);
-        } else if(e.getSource() == proposeDrawButton) {
+        } else if (e.getSource() == proposeDrawButton) {
             hasDeniedDraw = false;
             hasProposedDraw = true;
             proposeDrawButton.setEnabled(false);
             denyDrawButton.setEnabled(false);
-        } else if(e.getSource() == submitButton) {
-            RequestPacket request = new RequestPacket(selectedRow,selectedColumn);
+        } else if (e.getSource() == submitButton) {
+            RequestPacket request = new RequestPacket(selectedRow, selectedColumn);
 
-            if(hasProposedDraw) {
+            if (hasProposedDraw) {
                 request.setHasProposedDraw(true);
-            } else if(hasDeniedDraw) {
+            } else if (hasDeniedDraw) {
                 request.setHasDeniedDraw(true);
             }
 
-            if(hasToProposePiece) {
+            if (hasToProposePiece) {
                 request.setHasProposedPiece(true);
-            } else if(hasToProposeMove) {
+            } else if (hasToProposeMove) {
                 request.setHasProposedMove(true);
             }
 
@@ -294,10 +297,10 @@ public class Client extends JFrame implements ActionListener, MouseListener {
         //it is flipped on rendering if necessary
         //flip selection if the board has been flipped
 
-        if(!hasToFlipBoard) {
+        if (!hasToFlipBoard) {
             selectedRow = source.getRow();
             selectedColumn = source.getColumn();
-        }else {
+        } else {
             selectedRow = 7 - source.getRow();
             selectedColumn = 7 - source.getColumn();
         }

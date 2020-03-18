@@ -15,7 +15,7 @@ public class ResponsePacket implements Serializable {
     private boolean hasToProposePiece;
     private boolean hasToProposeMove;
     private boolean hasToFlipBoard;
-
+    private boolean hasToDisplayInitialConnection;
 
     public ResponsePacket(int playerID) {
         //default values
@@ -31,6 +31,7 @@ public class ResponsePacket implements Serializable {
         hasToProposePiece = false;
         hasToProposeMove = false;
         isNewGameAboutToBegin = false;
+        hasToDisplayInitialConnection = false;
 
         //the server stores the board with player1 on top
         //flip it on rendering if necessary
@@ -43,6 +44,14 @@ public class ResponsePacket implements Serializable {
                 hasToFlipBoard = false;
                 break;
         }
+    }
+
+    public boolean hasToDisplayInitialConnection() {
+        return hasToDisplayInitialConnection;
+    }
+
+    public void setHasToDisplayInitialConnection(boolean hasToDisplayInitialConnection) {
+        this.hasToDisplayInitialConnection = hasToDisplayInitialConnection;
     }
 
     public boolean hasToFlipBoard() {
