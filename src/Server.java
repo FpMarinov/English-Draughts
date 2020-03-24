@@ -322,6 +322,7 @@ public class Server extends Thread {
             }
         }
 
+        //ClientThread fields
         private final Socket client;
         private final int playerID;
         private final ReentrantLock readWriteLock;
@@ -389,6 +390,7 @@ public class Server extends Thread {
 
     }
 
+    //Server fields
     private static final int PORT = 8765;
     private final Model model;
     private ServerSocket server;

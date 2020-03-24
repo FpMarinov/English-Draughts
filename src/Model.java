@@ -1,24 +1,40 @@
 import java.awt.*;
 
+/**
+ * Represents the game model(MVC) in a game of Draughts.
+ */
 public class Model {
 
-    private final Player player1;
-    private final Player player2;
+    //Model fields.
+    public static final int TOP_PLAYER_ID = 1;
+    public static final int BOTTOM_PLAYER_ID = 2;
+    private final Player topPlayer;
+    private final Player bottomPlayer;
     private final Board board;
     private Player activePlayer;
     private Piece activePiece;
 
+    /**
+     * Constructor.
+     */
     public Model() {
-        player1 = new Player(Color.RED);
-        player2 = new Player(Color.WHITE);
-        board = new Board(player1,player2);
-        activePlayer = player1;
+        topPlayer = new Player(Color.RED);
+        bottomPlayer = new Player(Color.WHITE);
+        board = new Board(topPlayer, bottomPlayer);
+        activePlayer = topPlayer;
     }
 
+    /**
+     * Resets the board for a new game.
+     */
     public void newGame() {
         board.reset();
     }
 
+    /**
+     * Returns the board.
+     * @return board
+     */
     public Board getBoard() {
         return board;
     }
@@ -29,21 +45,20 @@ public class Model {
      * @throws DrawException if there is a draw
      */
     public int checkGameOverReturnGameWinnerID() throws DrawException {
-        if(player1.getPiecesInGame().isEmpty()) {
-            return 2;
-        } else if(player2.getPiecesInGame().isEmpty()) {
-            return 1;
+        if(topPlayer.getPiecesInGame().isEmpty()) {
+            return BOTTOM_PLAYER_ID;
+        } else if(bottomPlayer.getPiecesInGame().isEmpty()) {
+            return TOP_PLAYER_ID;
         } else {
+            boolean topPlayerHasLegalMovesLeft = playerHasLegalMovesLeft(topPlayer);
+            boolean bottomPlayerHasLegalMovesLeft = playerHasLegalMovesLeft(bottomPlayer);
 
-            boolean player1HasLegalMovesLeft = playerHasLegalMovesLeft(player1);
-            boolean player2HasLegalMovesLeft = playerHasLegalMovesLeft(player2);
-
-            if(!player1HasLegalMovesLeft && !player2HasLegalMovesLeft) {
+            if(!topPlayerHasLegalMovesLeft && !bottomPlayerHasLegalMovesLeft) {
                 throw new DrawException();
-            } else if(!player1HasLegalMovesLeft) {
-                return 2;
-            } else if(!player2HasLegalMovesLeft) {
-                return 1;
+            } else if(!topPlayerHasLegalMovesLeft) {
+                return BOTTOM_PLAYER_ID;
+            } else if(!bottomPlayerHasLegalMovesLeft) {
+                return TOP_PLAYER_ID;
             } else {
                 return -1;
             }
@@ -51,7 +66,7 @@ public class Model {
     }
 
     /**
-     *
+     * Proposes a piece to become the active piece.
      * @param row row of proposed piece
      * @param column column of proposed piece
      * @throws PieceCantJumpException if the active player has a piece that can jump and hasn't selected it
@@ -78,15 +93,10 @@ public class Model {
                 throw new PieceCantMoveException();
             }
         }
-
-
-
     }
 
-    //returns true if the active piece can still jump after the move
-    //and it didn't become a king, false otherwise
     /**
-     *
+     * Proposes a move for the active piece.
      * @param newRow proposed new row for the active piece
      * @param newColumn proposed new column for the active piece
      * @return true if the active player must make another move,
@@ -114,26 +124,40 @@ public class Model {
         }
     }
 
+    /**
+     * Sets the active player, based on his ID.
+     * @param playerID ID of new active player
+     */
     public void setActivePlayer(int playerID) {
         switch(playerID) {
-            case 1:
-                activePlayer = player1;
+            case TOP_PLAYER_ID:
+                activePlayer = topPlayer;
                 break;
 
-            case 2:
-                activePlayer = player2;
+            case BOTTOM_PLAYER_ID:
+                activePlayer = bottomPlayer;
                 break;
         }
     }
 
+    /**
+     * Returns the ID of the active player.
+     * @return ID of active player
+     */
     public int getActivePlayerID() {
-        if(activePlayer == player1) {
-            return 1;
+        if(activePlayer == topPlayer) {
+            return TOP_PLAYER_ID;
         } else {
-            return 2;
+            //activePlayer == bottomPlayer
+            return BOTTOM_PLAYER_ID;
         }
     }
 
+    /**
+     * Checks if a player has a piece that can jump.
+     * @param player
+     * @return true/false
+     */
     private boolean playerCanJump(Player player) {
         for(Piece piece: player.getPiecesInGame()) {
             if(board.pieceCanJump(piece)) {
@@ -143,6 +167,11 @@ public class Model {
         return false;
     }
 
+    /**
+     * Checks if a player has a possible legal move.
+     * @param player
+     * @return true/false
+     */
     private boolean playerHasLegalMovesLeft(Player player) {
         if(playerCanJump(player)) {
             return true;
@@ -155,5 +184,4 @@ public class Model {
             return false;
         }
     }
-
 }

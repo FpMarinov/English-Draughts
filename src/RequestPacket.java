@@ -1,7 +1,11 @@
 import java.io.Serializable;
 
+/**
+ * Represents a packet of data sent from a Client to the Server in the Draughts game.
+ */
 public class RequestPacket implements Serializable {
 
+    //RequestPacket fields
     private boolean hasProposedDraw;
     private boolean hasDeniedDraw;
     private boolean hasProposedPiece;
@@ -9,6 +13,11 @@ public class RequestPacket implements Serializable {
     private int proposedRow;
     private int proposedColumn;
 
+    /**
+     * Constructor.
+     * @param proposedRow
+     * @param proposedColumn
+     */
     public RequestPacket(int proposedRow, int proposedColumn) {
         hasProposedDraw = false;
         hasDeniedDraw = false;
@@ -17,6 +26,8 @@ public class RequestPacket implements Serializable {
         this.proposedRow = proposedRow;
         this.proposedColumn = proposedColumn;
     }
+
+    //Getters and Setters.
 
     public boolean hasDeniedDraw() {
         return hasDeniedDraw;

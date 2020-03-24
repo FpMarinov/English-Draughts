@@ -1,7 +1,11 @@
 import java.io.Serializable;
 
+/**
+ * Represents a packet of data sent from the Server to a Client in the Draughts game.
+ */
 public class ResponsePacket implements Serializable {
 
+    //ResponsePacket fields
     private boolean isFirstTurn;
     private String errorMessage;
     private Board board;
@@ -17,6 +21,10 @@ public class ResponsePacket implements Serializable {
     private boolean hasToFlipBoard;
     private boolean hasToDisplayInitialConnection;
 
+    /**
+     * Constructor.
+     * @param playerID playerID of the Client the ResponsePacket is for
+     */
     public ResponsePacket(int playerID) {
         //default values
         board = null;
@@ -33,18 +41,20 @@ public class ResponsePacket implements Serializable {
         isNewGameAboutToBegin = false;
         hasToDisplayInitialConnection = false;
 
-        //the server stores the board with player1 on top
+        //the Server's Model stores the board with topPlayer on top
         //flip it on rendering if necessary
         switch (playerID) {
-            case 1:
+            case Model.TOP_PLAYER_ID:
                 hasToFlipBoard = true;
                 break;
 
-            case 2:
+            case Model.BOTTOM_PLAYER_ID:
                 hasToFlipBoard = false;
                 break;
         }
     }
+
+    //Getters and Setters.
 
     public boolean hasToDisplayInitialConnection() {
         return hasToDisplayInitialConnection;
