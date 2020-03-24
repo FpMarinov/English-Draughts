@@ -9,8 +9,15 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
+/**
+ * Represents a Client in a game of Draughts.
+ */
 public class Client extends JFrame implements ActionListener, MouseListener {
 
+    /**
+     * A class that inherits from SwingWorker and handles the reception
+     * of ResponsePackets from the Server.
+     */
     private class ReadWorker extends SwingWorker<Void, Void> {
         public Void doInBackground() {
             ResponsePacket response = null;
@@ -24,10 +31,9 @@ public class Client extends JFrame implements ActionListener, MouseListener {
                 return null;
             }
         }
-
     }
 
-
+    //Client fields
     private static final int PORT = 8765;
     private static final String SERVER_IP = "127.0.0.1";
     private static final int UNIT = 40;
@@ -49,9 +55,11 @@ public class Client extends JFrame implements ActionListener, MouseListener {
     private boolean hasToProposePiece;
     private boolean hasToProposeMove;
 
-
+    /**
+     * Constructor.
+     */
     public Client() {
-
+        //initial fields setup
         selectedRow = 0;
         selectedColumn = 0;
         hasProposedDraw = false;
@@ -59,6 +67,7 @@ public class Client extends JFrame implements ActionListener, MouseListener {
         hasToProposePiece = false;
         hasToProposeMove = false;
 
+        //Initialization of buttons, textFields and the boardPanel
         connectButton = new JButton("Connect");
         submitButton = new JButton("Submit");
         proposeDrawButton = new JButton("Propose Draw");
@@ -67,27 +76,30 @@ public class Client extends JFrame implements ActionListener, MouseListener {
         secondaryMessageField = new JTextField();
         boardPanel = new BoardPanel(this);
 
+        //addition of actionListener to buttons
         connectButton.addActionListener(this);
         submitButton.addActionListener(this);
         proposeDrawButton.addActionListener(this);
         denyDrawButton.addActionListener(this);
 
+        //Initial enabled/editable setup for buttons/textFields
         submitButton.setEnabled(false);
         proposeDrawButton.setEnabled(false);
         denyDrawButton.setEnabled(false);
         mainMessageField.setEditable(false);
         secondaryMessageField.setEditable(false);
 
-
+        //GUI window visual setup and defaultCloseOperation handling
         setSize(17 * UNIT, 20 * UNIT);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setTitle("Draughts");
         setVisible(true);
-
         layoutComponents();
-
     }
 
+    /**
+     * Disables all buttons.
+     */
     private void disableButtons() {
         connectButton.setEnabled(false);
         submitButton.setEnabled(false);
@@ -95,11 +107,20 @@ public class Client extends JFrame implements ActionListener, MouseListener {
         denyDrawButton.setEnabled(false);
     }
 
+    /**
+     * Enables the submit and proposeDraw buttons.
+     */
     private void enableSubmitAndProposeDrawButtons() {
         submitButton.setEnabled(true);
         proposeDrawButton.setEnabled(true);
     }
 
+    /**
+     * Makes a JPanel to hold 2 buttons.
+     * @param topButton
+     * @param bottomButton
+     * @return JPanel that holds 2 buttons
+     */
     private JPanel makeButtonsPanel(JButton topButton, JButton bottomButton) {
         JPanel buttonsPanel = new JPanel();
         buttonsPanel.setLayout(new GridLayout(2, 1));
@@ -109,23 +130,29 @@ public class Client extends JFrame implements ActionListener, MouseListener {
         return buttonsPanel;
     }
 
+    /**
+     * Lays out the components of the GUI
+     */
     private void layoutComponents() {
-        setLayout(new BorderLayout());
+        //handle main panel
         JPanel mainPanel = new JPanel();
         mainPanel.setLayout(new BoxLayout(mainPanel, BoxLayout.Y_AXIS));
 
+        //handle top panel and add it to the main panel
         JPanel topPanel = new JPanel();
         topPanel.setBorder(BorderFactory.createEmptyBorder(UNIT, UNIT, UNIT, UNIT));
         topPanel.setLayout(new BorderLayout());
         topPanel.add(boardPanel);
         mainPanel.add(topPanel);
 
+        //handle middle panel and add it to the main panel
         JPanel midPanel = new JPanel();
         midPanel.setLayout(new GridLayout(1, 2));
         midPanel.add(makeButtonsPanel(submitButton, connectButton));
         midPanel.add(makeButtonsPanel(proposeDrawButton, denyDrawButton));
         mainPanel.add(midPanel);
 
+        //handle bottom panel and add it to the main panel
         JPanel bottomPanel = new JPanel();
         bottomPanel.setBorder(BorderFactory.createEmptyBorder(0, UNIT, UNIT, UNIT));
         bottomPanel.setLayout(new GridLayout(2, 1));
@@ -133,17 +160,25 @@ public class Client extends JFrame implements ActionListener, MouseListener {
         bottomPanel.add(mainMessageField);
         mainPanel.add(bottomPanel);
 
+        //add main panel
+        setLayout(new BorderLayout());
         add(mainPanel);
     }
 
+    /**
+     * Handles the ResponsePacket received from the Server.
+     * @param response ResponsePacket received from the Server
+     */
     public void handleResponse(ResponsePacket response) {
 
+        //check if the Client's board needs to be flipped
         hasToFlipBoard = response.hasToFlipBoard();
 
         //update board
         boardPanel.updateBoard(response.getBoard(), hasToFlipBoard);
 
         if (response.hasToDisplayInitialConnection()) {
+            //display initial connection message
             mainMessageField.setText("You have found an opponent.");
             secondaryMessageField.setText("");
         } else if (response.isGameOver()) {
@@ -166,16 +201,19 @@ public class Client extends JFrame implements ActionListener, MouseListener {
             }
             disableButtons();
         } else if (response.isNewGameAboutToBegin()) {
+            //handle new game
             mainMessageField.setText("A new game is about to begin.");
             secondaryMessageField.setText("");
             disableButtons();
         } else if (response.hasToEndTurn()) {
+            //handle turn end
             mainMessageField.setText("Your turn has ended. Wait for your opponent's turn to finish.");
             hasToProposePiece = false;
             hasToProposeMove = false;
             secondaryMessageField.setText("");
             disableButtons();
         } else if (response.hasToProposePiece()) {
+            //handle piece proposal
             if (response.isFirstTurn()) {
                 mainMessageField.setText("The game has begun. Choose your active piece " +
                         "by clicking it and pressing \"Submit\".");
@@ -187,10 +225,12 @@ public class Client extends JFrame implements ActionListener, MouseListener {
             enableSubmitAndProposeDrawButtons();
 
             if (response.hasOpponentProposedDraw()) {
+                //handle draw proposal by opponent
                 secondaryMessageField.setText("Your opponent proposed a draw. " +
                         "Press \"Deny Draw\" to deny or \"Propose Draw\", then \"Submit\", to accept.");
                 denyDrawButton.setEnabled(true);
             } else if (response.hasOpponentDeniedDraw()) {
+                //handle draw denial by opponent
                 secondaryMessageField.setText("Your opponent has denied your draw proposal.");
             } else {
                 //handle error message
@@ -201,7 +241,7 @@ public class Client extends JFrame implements ActionListener, MouseListener {
                 }
             }
         } else if (response.hasToProposeMove()) {
-
+            //handle move proposal
             mainMessageField.setText("Choose where to move your active piece by clicking " +
                     "the new position and pressing \"Submit\".");
             hasToProposePiece = false;
@@ -214,12 +254,13 @@ public class Client extends JFrame implements ActionListener, MouseListener {
             } else {
                 secondaryMessageField.setText("");
             }
-
         }
-
-
     }
 
+    /**
+     * Sends a RequestPacket to the Server.
+     * @param request RequestPacket sent to the Server
+     */
     public void sendRequest(RequestPacket request) {
         try {
             outputStream.writeObject(request);
@@ -230,6 +271,9 @@ public class Client extends JFrame implements ActionListener, MouseListener {
         }
     }
 
+    /**
+     * Connects to the Server.
+     */
     public void connect() {
         try {
             server = new Socket(SERVER_IP, PORT);
@@ -251,6 +295,10 @@ public class Client extends JFrame implements ActionListener, MouseListener {
         readWorker.execute();
     }
 
+    /**
+     * actionPerformed method.
+     * @param e ActionEvent
+     */
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource() == connectButton) {
@@ -289,6 +337,10 @@ public class Client extends JFrame implements ActionListener, MouseListener {
         }
     }
 
+    /**
+     * mouseClicked method.
+     * @param e MouseEvent
+     */
     @Override
     public void mouseClicked(MouseEvent e) {
         TilePanel source = (TilePanel) e.getSource();
@@ -323,6 +375,10 @@ public class Client extends JFrame implements ActionListener, MouseListener {
     public void mouseExited(MouseEvent e) {
     }
 
+    /**
+     * Main method. Creates two clients.
+     * @param args Program arguments
+     */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
 
@@ -333,6 +389,5 @@ public class Client extends JFrame implements ActionListener, MouseListener {
                 new Client();
             }
         });
-
     }
 }

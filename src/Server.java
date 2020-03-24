@@ -7,12 +7,25 @@ import java.util.Random;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
+/**
+ * Represents the Server in a game of Draughts.
+ */
 public class Server extends Thread {
 
+    /**
+     * A Thread that handles a particular Client on the Server side.
+     */
     private class ClientThread extends Thread {
 
+        /**
+         * A Thread that handles the reading of RequestPackets from
+         * a particular Client on the Server side.
+         */
         private class ServerRequestReader extends Thread {
 
+            /**
+             * ServerRequestReader's run method.
+             */
             public void run() {
                 RequestPacket request;
                 try {
@@ -31,8 +44,7 @@ public class Server extends Thread {
                             }
                         }
 
-                        ///////DEAL WITH REQUEST////////////
-
+                        //deal with request
                         if (request.hasProposedPiece()) {
                             //deal with a piece proposal
                             int row = request.getProposedRow();
@@ -85,8 +97,17 @@ public class Server extends Thread {
             }
         }
 
+        /**
+         * A Thread that handles the writing of ResponsePackets to
+         * a particular Client on the Server side.
+         */
         private class ServerResponseWriter extends Thread {
 
+            /**
+             * Ends the current player's turn via modifying
+             * the ResponsePacket sent to the Server.
+             * @param response ResponsePacket sent to the Server
+             */
             private void turnEnd(ResponsePacket response) {
                 //turn needs to end
                 response.setHasToEndTurn(true);
@@ -97,12 +118,12 @@ public class Server extends Thread {
                 //change active player
                 int otherPlayerID = 0;
                 switch (playerID) {
-                    case 1:
-                        otherPlayerID = 2;
+                    case Model.TOP_PLAYER_ID:
+                        otherPlayerID = Model.BOTTOM_PLAYER_ID;
                         break;
 
-                    case 2:
-                        otherPlayerID = 1;
+                    case Model.BOTTOM_PLAYER_ID:
+                        otherPlayerID = Model.TOP_PLAYER_ID;
                         break;
                 }
                 model.setActivePlayer(otherPlayerID);
@@ -112,6 +133,9 @@ public class Server extends Thread {
                 hasRequest = true;
             }
 
+            /**
+             * ServerResponseWriter's run method.
+             */
             public void run() {
                 while (!client.isClosed()) {
                     playerLock.lock();
@@ -131,7 +155,8 @@ public class Server extends Thread {
 
                     //if there is a request, the writer thread for
                     //this client continues, otherwise it waits
-                    //for a request(the initial connection is counted
+                    //for a request(the initial connection and
+                    // the beginning of every turn is counted
                     // as a request, even though it doesn't send a
                     // request packet)
                     while (!hasRequest) {
@@ -145,11 +170,11 @@ public class Server extends Thread {
                     //clear last request
                     hasRequest = false;
 
-                    //make a response object and reference the game board
-                    //in it
+                    //make a response object
                     ResponsePacket response = new ResponsePacket(playerID);
 
                     if (hasToDisplayInitialConnection) {
+                        //handle initial connection message flag
                         response.setHasToDisplayInitialConnection(true);
                         hasToDisplayInitialConnection = false;
 
@@ -160,14 +185,13 @@ public class Server extends Thread {
                         //players know about it
 
                         //wait 3 seconds
-                        //for player to read
-                        //game over
+                        //for each player to read
+                        //game over message
                         try {
                             Thread.sleep(3000);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
-
 
                         //restart game
                         resetClientThreadFields();
@@ -181,6 +205,7 @@ public class Server extends Thread {
                         //if both resets have happened
                         //make sure the next turn skips
                         //the current code block
+                        //and reset the model
                         if (fieldResets == 2) {
                             fieldResets = 0;
                             gameOverSignals = 0;
@@ -189,7 +214,6 @@ public class Server extends Thread {
 
                         //change player
                         turnEnd(response);
-
                     } else if (drawProposals == 2) {
                         //deal with an agreed upon draw
                         //at any point during the turn
@@ -223,7 +247,6 @@ public class Server extends Thread {
                             isDeniedDraw = false;
                             hasPlayerProposedDraw = false;
                         }
-
 
                         //check for first turn
                         if (isFirstTurn) {
@@ -264,7 +287,6 @@ public class Server extends Thread {
                                 response.setDraw(true);
                             }
 
-
                             turnEnd(response);
                             gameOverSignals++;
 
@@ -289,7 +311,6 @@ public class Server extends Thread {
                             errorMessage = null;
                         }
                     } else {
-
                         //setup the next turn start
                         hasToProposePiece = true;
                         turnEnd(response);
@@ -306,10 +327,8 @@ public class Server extends Thread {
                         e.printStackTrace();
                     }
 
-
                     //signal the read thread of the client
                     requestCondition.signal();
-
 
                     readWriteLock.unlock();
                     playerLock.unlock();
@@ -338,6 +357,11 @@ public class Server extends Thread {
         private boolean hasPlayerDeniedDraw;
         private boolean hasToDisplayInitialConnection;
 
+        /**
+         * Constructor.
+         * @param client Client's socket
+         * @param playerID playerID for corresponding to the Client.
+         */
         public ClientThread(Socket client, int playerID) {
             this.client = client;
             this.playerID = playerID;
@@ -355,6 +379,9 @@ public class Server extends Thread {
             }
         }
 
+        /**
+         * Resets the fields of ClientThread.
+         */
         public void resetClientThreadFields() {
             hasRequest = true;
             isFirstTurn = true;
@@ -365,6 +392,9 @@ public class Server extends Thread {
             hasPlayerDeniedDraw = false;
         }
 
+        /**
+         * ClientThread's run method.
+         */
         public void run() {
             ServerResponseWriter responseWriter = new ServerResponseWriter();
             ServerRequestReader requestReader = new ServerRequestReader();
@@ -373,8 +403,7 @@ public class Server extends Thread {
             requestReader.start();
 
             try {
-
-//                responseWriter.join();
+                responseWriter.join();
                 requestReader.join();
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -385,9 +414,7 @@ public class Server extends Thread {
                     e.printStackTrace();
                 }
             }
-
         }
-
     }
 
     //Server fields
@@ -404,8 +431,10 @@ public class Server extends Thread {
     private int gameOverSignals;
     private int fieldResets;
 
+    /**
+     * Constructor.
+     */
     public Server() {
-
         model = new Model();
         resetServerFields();
         gameOverSignals = 0;
@@ -420,6 +449,9 @@ public class Server extends Thread {
         activePlayerCondition = playerLock.newCondition();
     }
 
+    /**
+     * Resets the fields of Server.
+     */
     public void resetServerFields() {
         drawProposals = 0;
         isDeniedDraw = false;
@@ -428,44 +460,44 @@ public class Server extends Thread {
         isGameOver = false;
     }
 
+    /**
+     * Server's run method.
+     */
     public void run() {
-
         Random random = new Random();
 
         //PlayerID of 1st client to connect is randomly selected
         int firstClientPlayerID = random.nextInt(2) + 1;
 
-        ClientThread player1Client = null;
-        ClientThread player2Client = null;
+        ClientThread topPlayerClient = null;
+        ClientThread bottomPlayerClient = null;
 
         switch (firstClientPlayerID) {
-            case 1:
+            case Model.TOP_PLAYER_ID:
                 try {
-                    player1Client = new ClientThread(server.accept(), 1);
-                    player2Client = new ClientThread(server.accept(), 2);
+                    topPlayerClient = new ClientThread(server.accept(), Model.TOP_PLAYER_ID);
+                    bottomPlayerClient = new ClientThread(server.accept(), Model.BOTTOM_PLAYER_ID);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
                 break;
 
-            case 2:
+            case Model.BOTTOM_PLAYER_ID:
                 try {
-                    player2Client = new ClientThread(server.accept(), 2);
-                    player1Client = new ClientThread(server.accept(), 1);
+                    bottomPlayerClient = new ClientThread(server.accept(), Model.BOTTOM_PLAYER_ID);
+                    topPlayerClient = new ClientThread(server.accept(), Model.TOP_PLAYER_ID);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
                 break;
         }
 
-
-        player1Client.start();
-        player2Client.start();
-
+        topPlayerClient.start();
+        bottomPlayerClient.start();
 
         try {
-            player1Client.join();
-            player2Client.join();
+            topPlayerClient.join();
+            bottomPlayerClient.join();
         } catch (InterruptedException e) {
             e.printStackTrace();
         } finally {
@@ -477,6 +509,10 @@ public class Server extends Thread {
         }
     }
 
+    /**
+     * Main method. Creates one server and starts it.
+     * @param args Program arguments
+     */
     public static void main(String[] args) {
         Server server = new Server();
         server.start();
@@ -485,6 +521,5 @@ public class Server extends Thread {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
     }
 }
