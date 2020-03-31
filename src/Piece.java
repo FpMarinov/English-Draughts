@@ -8,7 +8,7 @@ public class Piece implements Serializable {
 
     //Piece fields
     private boolean isKing;
-    private boolean hasJumped;
+    private transient boolean hasJumped;
     private final Color color;
     private final transient Player pieceOwner;
     private transient int row;
