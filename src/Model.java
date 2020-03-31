@@ -116,9 +116,22 @@ public class Model {
                 return false;
             }
 
+            //track if the piece has made a jump
+            //to allow moving backwards for double
+            //jumps
+            activePiece.setHasJumped(isMoveAJump);
+
             //if the previous move was a jump and the piece
             //can still jump, it must do so
-            return isMoveAJump && board.pieceCanJump(activePiece);
+            boolean playerHasToMakeAnotherMove = isMoveAJump && board.pieceCanJump(activePiece);
+
+            //reset active piece jump status
+            //for next turn
+            if(!playerHasToMakeAnotherMove) {
+                activePiece.setHasJumped(false);
+            }
+
+            return playerHasToMakeAnotherMove;
         } else {
             throw new IllegalMoveException();
         }

@@ -8,6 +8,7 @@ public class Piece implements Serializable {
 
     //Piece fields
     private boolean isKing;
+    private boolean hasJumped;
     private final Color color;
     private final transient Player pieceOwner;
     private transient int row;
@@ -21,6 +22,7 @@ public class Piece implements Serializable {
      */
     public Piece(Player pieceOwner, Color color) {
         this.isKing = false;
+        this.hasJumped = false;
         this.pieceOwner = pieceOwner;
         this.color = color;
 
@@ -43,10 +45,11 @@ public class Piece implements Serializable {
     }
 
     /**
-     * Removes the crown of a piece.
+     * Removes the crown of a piece and resets the hasJumped field.
      */
-    public void becomeUncrowned() {
+    public void becomeUncrownedAndResetHasJumped() {
         isKing = false;
+        hasJumped = false;
     }
 
     /**
@@ -156,5 +159,13 @@ public class Piece implements Serializable {
 
     public Color getColor() {
         return color;
+    }
+
+    public boolean hasJumped() {
+        return hasJumped;
+    }
+
+    public void setHasJumped(boolean hasJumped) {
+        this.hasJumped = hasJumped;
     }
 }

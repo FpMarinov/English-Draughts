@@ -72,7 +72,7 @@ public class Board implements Serializable {
      * @return true/false
      */
     public boolean pieceCanJump(Piece currentPiece) {
-        if (currentPiece.isKing()) {
+        if (currentPiece.isKing() || currentPiece.hasJumped()) {
             return pieceCanJumpUp(currentPiece) || pieceCanJumpDown(currentPiece);
         } else if (currentPiece.isOwnedBy(topPlayer)) {
             return pieceCanJumpDown(currentPiece);
@@ -162,7 +162,7 @@ public class Board implements Serializable {
         boolean pieceAttemptsSimpleMoveDownLeft = activePiece.attemptsSimpleMoveDownLeft(newRow, newColumn);
         boolean pieceAttemptsSimpleMoveDownRight = activePiece.attemptsSimpleMoveDownRight(newRow, newColumn);
 
-        if (activePiece.isKing()) {
+        if (activePiece.isKing() || activePiece.hasJumped()) {
 
             if (pieceCanJump(activePiece)) {
                 return pieceAttemptsToJumpDownLeft || pieceAttemptsToJumpDownRight || pieceAttemptsToJumpUpLeft || pieceAttemptsToJumpUpRight;
@@ -201,7 +201,7 @@ public class Board implements Serializable {
      */
     private void movePieceForReset(Piece piece, int newRow, int newColumn) {
         piece.insertInGame();
-        piece.becomeUncrowned();
+        piece.becomeUncrownedAndResetHasJumped();
         piecePositions[newRow][newColumn] = piece;
         piece.setRow(newRow);
         piece.setColumn(newColumn);
